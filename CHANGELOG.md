@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.0.0 — 2026-10-24
+
+- Aufnahme in den offiziellen HACS-Katalog; die reguläre Installation erfolgt über die HACS-Suche.
+- Migration bestehender Custom Repositories dokumentiert: nur den Eintrag unter „Benutzerdefinierte Repositories“ entfernen, Installation und Konfiguration beibehalten, HACS aktualisieren und prüfen.
+- Security-Review: Dateisystemprüfung beim Start in den Executor verlagert, damit langsame Datenträger den Home-Assistant-Event-Loop nicht blockieren; Regressionstest ergänzt.
+- Versionsangaben von Integration, Paket und mitgelieferter Karte auf 3.0.0 abgestimmt; Validierung bei Pull Requests aktiviert.
+- Die Major-Version dokumentiert die HACS-Aufnahme und bedeutet nicht automatisch Breaking Changes. Bestehende Konfigurationen, Entitäten und Dashboard-Karten bleiben kompatibel.
+
+Geplantes Release, noch nicht veröffentlicht. Prüfumfang und Ergebnisse: [SECURITY_REVIEW.md](SECURITY_REVIEW.md).
+
 ## 2.0.1 — 2026-10-16
 
 - Neue, im Browser erstellte Vorschauen aus dem unveränderten Original-Code in der README.

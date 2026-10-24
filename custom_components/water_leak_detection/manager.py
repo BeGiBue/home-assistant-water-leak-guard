@@ -260,7 +260,7 @@ class WaterLeakManager:
     async def _async_setup_locked(self) -> None:
         """Restore persisted state and start tracking source entities."""
         setup_started_at = self.timer_now
-        existed = Path(self._store.path).is_file()
+        existed = await self.hass.async_add_executor_job(Path(self._store.path).is_file)
         self._store.recovered_data = None  # Recovery may only use this load attempt's valid body.
         try:
             stored = await self._store.async_load()

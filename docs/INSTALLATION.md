@@ -14,19 +14,18 @@
 
 [![Open your Home Assistant instance and open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=BeGiBue&repository=home-assistant-water-leak-guard&category=integration)
 
-### Manual HACS repository
+### Official HACS catalog
 
-1. Open **HACS** in Home Assistant.
-2. Open the HACS menu and choose **Custom repositories**.
-3. Add:
-   - Repository: `https://github.com/BeGiBue/home-assistant-water-leak-guard`
-   - Category: **Integration**
-4. Open **Water Leak Guard** in HACS.
-5. Download the latest release.
-6. Restart Home Assistant.
-7. Open **Settings → Devices & services → Add integration**.
-8. Search for **Water Leak Guard**.
-9. Complete the configuration flow.
+1. Open **HACS** and search for **Water Leak Guard**.
+2. Select `BeGiBue/home-assistant-water-leak-guard` and download the integration.
+3. Restart Home Assistant.
+4. Open **Settings → Devices & services → Add integration**, search for **Water Leak Guard**, and complete the configuration flow.
+
+### Existing custom-repository installation
+
+First confirm the project is available in the official HACS catalog. Remove only the repository entry under **HACS → Custom repositories**; do not uninstall the existing package or integration. Refresh HACS and verify the installed project and updates. Keep existing configuration entries, entities, automations and dashboard cards. Restart Home Assistant after an update and fully reload the frontend.
+
+The planned 3.0.0 major version records catalog admission and migration; it does not automatically imply breaking changes. This update requires no configuration conversion.
 
 ## Manual installation
 
