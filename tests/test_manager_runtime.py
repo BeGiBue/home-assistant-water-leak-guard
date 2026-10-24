@@ -401,3 +401,32 @@ async def test_f13_entry_unload_setup_rebases_new_meter_and_preserves_safety(
     assert snapshot.active_event_id == event_id
     assert snapshot.shutoff_request
     assert snapshot.active_volume_l < 100
+
+
+async def test_startup_store_file_probe_uses_executor(
+    runtime_hass, runtime_entry, measurement_clock, monkeypatch
+):
+    """A slow store metadata probe must not execute directly on the HA loop."""
+    executor_active = False
+    checked_probes = []
+    original_executor = runtime_hass.async_add_executor_job
+    original_is_file = Path.is_file
+
+    async def executor_job(target, *args):
+        nonlocal executor_active
+        executor_active = True
+        try:
+            return await original_executor(target, *args)
+        finally:
+            executor_active = False
+
+    def is_file(path):
+        if "water_leak_detection" in path.name:
+            checked_probes.append(str(path))
+            assert executor_active, "Runtime store file probe blocked the event loop"
+        return original_is_file(path)
+
+    monkeypatch.setattr(runtime_hass, "async_add_executor_job", executor_job)
+    monkeypatch.setattr(Path, "is_file", is_file)
+    await start_manager(runtime_hass, runtime_entry, measurement_clock)
+    assert checked_probes

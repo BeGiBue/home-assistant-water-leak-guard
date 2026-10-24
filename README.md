@@ -8,8 +8,8 @@
 
 A backend-focused Home Assistant custom integration for detecting abnormal water consumption and possible water leaks from an existing water-meter flow sensor.
 
-**Current release:** 2.0.1
-**Release status:** stable. See the [2.0.1 release notes](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/RELEASE_NOTES_2.0.1.md).
+**Current release:** 3.0.0
+**Release status:** prepared for review; not yet published. See the [3.0.0 release notes](RELEASE_NOTES_3.0.0.md).
 **External leak sensors:** supported. The former beta restriction (F04-FSR-H01, damaged persisted
 data of configured external sensors) is fixed in 2.0.0; see [F04-FSR-H01](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/F04_FSR_H01.md).
 **Minimum Home Assistant:** 2026.9.0
@@ -47,12 +47,7 @@ data of configured external sensors) is fixed in 2.0.0; see [F04-FSR-H01](https:
 
 ### HACS — recommended
 
-Use the button above, or add the repository manually in HACS:
-
-- Repository: `https://github.com/BeGiBue/home-assistant-water-leak-guard`
-- Category: **Integration**
-
-Then:
+The project is included in the official HACS catalog. Open HACS, search for **Water Leak Guard**, and select it.
 
 1. Download **Water Leak Guard** in HACS.
 2. Restart Home Assistant.
@@ -61,6 +56,16 @@ Then:
 5. Complete the config flow.
 
 Detailed installation and update instructions: [docs/INSTALLATION.md](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/INSTALLATION.md)
+
+### Migration from a custom repository
+
+1. Search for **Water Leak Guard** in the official HACS catalog and confirm the repository is `BeGiBue/home-assistant-water-leak-guard`.
+2. Remove only its entry under **HACS → Custom repositories** (German: **Benutzerdefinierte Repositories**).
+3. **Do not uninstall the existing integration** in HACS or under Devices & services.
+4. Refresh HACS (reload repository information if necessary), then check that the existing installation and offered updates are visible.
+5. Keep the existing config entry, entities, automations and `custom:water-leak-guard-card` dashboards. Install updates normally, restart Home Assistant, and fully reload the browser/app.
+
+Version **3.0.0** marks the official HACS catalog admission and this migration. A major version does not automatically mean breaking changes: this update requires no configuration or dashboard conversion. See [SECURITY_REVIEW.md](SECURITY_REVIEW.md) for the review scope and remaining verification.
 
 ### Manual installation
 
@@ -282,9 +287,9 @@ Event payloads include the event ID and relevant detector context. Burst events 
 - [Project Wiki](https://github.com/BeGiBue/home-assistant-water-leak-guard/wiki)
 - [Technical specification and roadmap](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/SPEC.md)
 
-## Release status
+## Release history
 
-Version 1.0.3 is the current stable release. It includes the complete original v0.1 → v0.3 backend roadmap plus the independently reviewed technical stabilization through correction round 7:
+Version 1.0.3 was an earlier stable release. It included the complete original v0.1 → v0.3 backend roadmap plus the independently reviewed technical stabilization through correction round 7:
 
 - **v0.1.0** — detection core and backend entities
 - **v0.2.0** — notifications, device acknowledgement, and geofencing
@@ -292,7 +297,7 @@ Version 1.0.3 is the current stable release. It includes the complete original v
 
 The previously published **0.3.0** GitHub release was tagged before the Home Assistant integration-type correction and still declared itself as a `helper`. **1.0.3 continues the corrected stable line introduced with 1.0.0, explicitly declares `integration_type: "service"`, and contains the reviewed safety and reliability corrections released after 1.0.2.**
 
-The release is validated against Home Assistant 2026.9.4 / Python 3.14.2 with compile checks, Ruff, JSON validation, and automated tests.
+The release workflow validates the selected commit against Home Assistant 2026.9.4 with compile checks, Ruff, JSON validation, and automated tests. Current review results are recorded in [SECURITY_REVIEW.md](SECURITY_REVIEW.md).
 
 
 ## License
@@ -466,7 +471,7 @@ See [configuration](https://github.com/BeGiBue/home-assistant-water-leak-guard/b
 
 ### Dashboard card and verification status
 
-Since 2.0.0 the card (0.6.2) is installed and loaded with the integration, shows the
+Since 2.0.0 the card is installed and loaded with the integration, shows the
 hydraulic monitoring state separately from the alarm state and offers per-device alarm actions
 that the backend authorizes (see [Dashboard card](#dashboard-card) and [docs/CARD.md](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/CARD.md)).
 Remove an older manual `/local/water-leak-guard-card.js` resource after upgrading.
