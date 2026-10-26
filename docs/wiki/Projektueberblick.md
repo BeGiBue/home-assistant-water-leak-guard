@@ -21,7 +21,7 @@
 
 Ein einzelner Grenzwert reicht für eine brauchbare Wasserleck-Erkennung nicht aus.
 
-Ein Durchfluss von 7 L/h ist in einem Haushalt klein, kann über Stunden aber eindeutig auf einen dauerhaften Verlust hindeuten. Ein Durchfluss von 600 L/h kann beim Duschen oder Befüllen einer Badewanne normal sein, über lange Zeit aber auffällig werden. Ein plötzlicher Sprung auf mehrere Tausend Liter pro Stunde ist wiederum eine völlig andere Gefahrenklasse.
+Ein Durchfluss von 7 l/h ist in einem Haushalt klein, kann über Stunden aber eindeutig auf einen dauerhaften Verlust hindeuten. Ein Durchfluss von 600 l/h kann beim Duschen oder Befüllen einer Badewanne normal sein, über lange Zeit aber auffällig werden. Ein plötzlicher Sprung auf mehrere Tausend Liter pro Stunde ist wiederum eine völlig andere Gefahrenklasse.
 
 Der Wasserwächter behandelt diese Fälle daher **nicht als einen Alarm mit vier Schwellen**, sondern als vier unabhängige Zustandsautomaten mit eigenen Regeln.
 
@@ -31,13 +31,13 @@ Der Wasserwächter behandelt diese Fälle daher **nicht als einen Alarm mit vier
 
 Es wird ein Durchflusssensor benötigt.
 
-Intern wird jeder unterstützte Wert auf **Liter pro Stunde (L/h)** normiert.
+Intern wird jeder unterstützte Wert auf **Liter pro Stunde (l/h)** normiert.
 
 Unterstützte typische Einheiten sind unter anderem:
 
-- L/h
-- L/min
-- L/s
+- l/h
+- l/min
+- l/s
 - m³/h
 - m³/min
 - m³/s
@@ -62,7 +62,7 @@ Die Entwicklung wurde unter anderem für eine typische Hausinstallation mit folg
 
 - Hausanschluss etwa **DN25 / 1"**
 - statischer Druck etwa **3,5 bar**
-- Durchflusssensor mit effektiver Auflösung etwa **1 L/h**
+- Durchflusssensor mit effektiver Auflösung etwa **1 l/h**
 
 Diese Werte sind **keine Voraussetzung**. Rohrdurchmesser und Druck können in den Experteneinstellungen angepasst werden.
 
@@ -101,7 +101,7 @@ Verdächtige High-/Burst-Situationen und High-Flow-Bypass-Zeiten werden nicht al
 
 ### Unbekannt ist nicht Null
 
-Ein nicht verfügbarer Durchflusssensor wird niemals als 0 L/h interpretiert.
+Ein nicht verfügbarer Durchflusssensor wird niemals als 0 l/h interpretiert.
 
 Dadurch kann ein Sensorausfall keinen aktiven Alarm künstlich „wegresetten“.
 

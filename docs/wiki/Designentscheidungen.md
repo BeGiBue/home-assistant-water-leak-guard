@@ -79,7 +79,7 @@ High Flow kombiniert Schwelle mit Dauer bzw. Volumen und besitzt einen Bypass.
 
 Sehr hoher Wasserverbrauch kann geplant und legitim sein.
 
-Ein sofortiger Alarm allein durch 600 L/h würde zu unnötigen Fehlalarmen führen.
+Ein sofortiger Alarm allein durch 600 l/h würde zu unnötigen Fehlalarmen führen.
 
 ---
 
@@ -178,10 +178,10 @@ Jeder Detektor besitzt eine eigene Resetbedingung.
 
 | Detektor | Reset |
 |---|---|
-| Slow | <3 L/h für 10 min |
-| Low | <20 L/h für 3 min |
-| High | <100 L/h für 5 min |
-| Burst | <500 L/h für 60 s |
+| Slow | <3 l/h für 10 min |
+| Low | <20 l/h für 3 min |
+| High | <100 l/h für 5 min |
+| Burst | <500 l/h für 60 s |
 
 High Flow kann zusätzlich bewusst per High-Flow-Bypass beendet/unterdrückt werden.
 
@@ -197,7 +197,7 @@ Je gefährlicher die Klasse, desto klarer muss die Entwarnung sein.
 
 ## Entscheidung
 
-Fehlende Sensorwerte werden nicht als 0 L/h behandelt.
+Fehlende Sensorwerte werden nicht als 0 l/h behandelt.
 
 ## Begründung
 

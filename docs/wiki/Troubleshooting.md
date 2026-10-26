@@ -37,9 +37,9 @@ Der Sensor muss eine unterstützte Durchflusseinheit besitzen.
 
 Typische Einheiten:
 
-- L/h
-- L/min
-- L/s
+- l/h
+- l/min
+- l/s
 - m³/h
 - m³/min
 - m³/s

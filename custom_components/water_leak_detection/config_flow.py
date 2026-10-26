@@ -1163,7 +1163,7 @@ class WaterLeakOptionsFlow(_NavigationForms, OptionsFlowWithReload):
                         CONF_SLOW_THRESHOLD_LPH,
                         DEFAULT_SLOW_THRESHOLD_LPH,
                     ),
-                ): _number(1, 500, 1, "L/h"),
+                ): _number(1, 500, 1, "l/h"),
                 probatio.Required(
                     CONF_SLOW_DETECTION_MIN,
                     default=values.get(
@@ -1184,7 +1184,7 @@ class WaterLeakOptionsFlow(_NavigationForms, OptionsFlowWithReload):
                         CONF_LOW_THRESHOLD_LPH,
                         DEFAULT_LOW_THRESHOLD_LPH,
                     ),
-                ): _number(1, 5000, 1, "L/h"),
+                ): _number(1, 5000, 1, "l/h"),
                 probatio.Required(
                     CONF_LOW_DETECTION_MIN,
                     default=values.get(
@@ -1198,7 +1198,7 @@ class WaterLeakOptionsFlow(_NavigationForms, OptionsFlowWithReload):
                         CONF_LOW_QUIET_LPH,
                         DEFAULT_LOW_QUIET_LPH,
                     ),
-                ): _number(1, 1000, 1, "L/h"),
+                ): _number(1, 1000, 1, "l/h"),
                 probatio.Required(
                     CONF_LOW_RESET_MIN,
                     default=values.get(
@@ -1229,7 +1229,7 @@ class WaterLeakOptionsFlow(_NavigationForms, OptionsFlowWithReload):
                     default=values.get(
                         CONF_LOW_STABILITY_ABSOLUTE_LPH, DEFAULT_LOW_STABILITY_ABSOLUTE_LPH
                     ),
-                ): _number(0.1, 5000, 0.1, "L/h"),
+                ): _number(0.1, 5000, 0.1, "l/h"),
                 probatio.Required(
                     CONF_LOW_STABILITY_REQUIRED_PERCENT,
                     default=values.get(
@@ -1242,7 +1242,7 @@ class WaterLeakOptionsFlow(_NavigationForms, OptionsFlowWithReload):
                         CONF_HIGH_THRESHOLD_LPH,
                         DEFAULT_HIGH_THRESHOLD_LPH,
                     ),
-                ): _number(1, 10000, 10, "L/h"),
+                ): _number(1, 10000, 10, "l/h"),
                 probatio.Required(
                     CONF_HIGH_DETECTION_MIN,
                     default=values.get(
@@ -1263,7 +1263,7 @@ class WaterLeakOptionsFlow(_NavigationForms, OptionsFlowWithReload):
                         CONF_HIGH_QUIET_LPH,
                         DEFAULT_HIGH_QUIET_LPH,
                     ),
-                ): _number(1, 5000, 1, "L/h"),
+                ): _number(1, 5000, 1, "l/h"),
                 probatio.Required(
                     CONF_HIGH_RESET_MIN,
                     default=values.get(
@@ -1277,7 +1277,7 @@ class WaterLeakOptionsFlow(_NavigationForms, OptionsFlowWithReload):
                         CONF_BURST_THRESHOLD_LPH,
                         DEFAULT_BURST_THRESHOLD_LPH,
                     ),
-                ): _number(100, 50000, 10, "L/h"),
+                ): _number(100, 50000, 10, "l/h"),
                 probatio.Required(
                     CONF_BURST_DETECTION_SEC,
                     default=values.get(
@@ -1291,7 +1291,7 @@ class WaterLeakOptionsFlow(_NavigationForms, OptionsFlowWithReload):
                         CONF_BURST_RESET_LPH,
                         DEFAULT_BURST_RESET_LPH,
                     ),
-                ): _number(1, 10000, 1, "L/h"),
+                ): _number(1, 10000, 1, "l/h"),
                 probatio.Required(
                     CONF_BURST_RESET_SEC,
                     default=values.get(
@@ -1319,7 +1319,7 @@ class WaterLeakOptionsFlow(_NavigationForms, OptionsFlowWithReload):
                         CONF_MANUAL_MAX_FLOW_LPH,
                         DEFAULT_MANUAL_MAX_FLOW_LPH,
                     ),
-                ): _number(0, 50000, 10, "L/h"),
+                ): _number(0, 50000, 10, "l/h"),
                 probatio.Required(
                     CONF_PIPE_DIAMETER_MM,
                     default=values.get(
@@ -1354,7 +1354,7 @@ class WaterLeakOptionsFlow(_NavigationForms, OptionsFlowWithReload):
                         CONF_BURST_RATE_RISE_LPH_10S,
                         DEFAULT_BURST_RATE_RISE_LPH_10S,
                     ),
-                ): _number(100, 20000, 100, "L/h / 10 s"),
+                ): _number(100, 20000, 100, "l/h / 10 s"),
                 probatio.Required(
                     CONF_BURST_RATE_CONFIRM_SEC,
                     default=values.get(

@@ -69,7 +69,7 @@ Ein unbekannter Sensorzustand darf kein aktives Ereignis zurücksetzen.
 
 Das ist die Konsequenz des Grundsatzes:
 
-**unknown != 0 L/h**
+**unknown != 0 l/h**
 
 ---
 
