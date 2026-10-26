@@ -610,7 +610,7 @@
     "notification_title": "Wasserwächter: {detector}",
     "notification_title_returning_home": "Wasserleck weiterhin aktiv",
     "notification_returned_home": "Du bist nach Hause zurückgekehrt, während dieses Ereignis noch aktiv ist.",
-    "notification_current_flow": "Aktueller Durchfluss: {flow} L/h.",
+    "notification_current_flow": "Aktueller Durchfluss: {flow} l/h.",
     "notification_volume": "Volumen seit Beginn der Erkennung: {volume} L.",
     "notification_event_active": "Ein Wasserereignis ist aktiv.",
     "action_mute_device": "Auf diesem Gerät stummschalten",

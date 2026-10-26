@@ -122,6 +122,13 @@ test("idle: no switch controls, no links to switch entities", async () => {
 
 const expandedOf = (h, key) => h.match(new RegExp(`data-section="${key}"[^>]*aria-expanded="(true|false)"`))?.[1];
 
+test("units follow the language: l/h in German, L/h in English", async () => {
+  const de = html(await mount({ lang: "de" }));
+  assert.ok(/<\/b> l\/h/.test(de) && !de.includes("L/h"), "German uses l/h only");
+  const en = html(await mount({ lang: "en" }));
+  assert.ok(/<\/b> L\/h/.test(en) && !/\bl\/h/.test(en), "English uses L/h only");
+});
+
 test("sections: expanded by default; toggle survives hass updates", async () => {
   const card = await mount();
   assert.equal(expandedOf(html(card), "bypass"), "true");
