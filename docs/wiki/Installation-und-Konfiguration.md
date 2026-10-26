@@ -146,14 +146,14 @@ Bei einer HACS-Aktualisierung sollte Home Assistant vollständig neu gestartet w
 
 ## Low-Flow-Stabilität in den Expertenoptionen (F08)
 
-Low Flow hat zwei Aktivierungswege im Band **150 L/h ≤ Durchfluss < statische High-Schwelle** (standardmäßig 600 L/h):
+Low Flow hat zwei Aktivierungswege im Band **150 l/h ≤ Durchfluss < statische High-Schwelle** (standardmäßig 600 l/h):
 
 - **Lang anhaltender Low Flow:** Der normale 60-Minuten-Pfad bleibt das Sicherheitsnetz, auch bei wechselndem Verbrauch.
 - **Besonders gleichmäßiger Low Flow:** Standardmäßig aktiviert; Früherkennung nach 30 Minuten zusammenhängender bestätigter Low-Evidenz, wenn das letzte 15-Minuten-Fenster stabil ist.
 
-Gleichmäßigkeit ist ein zusätzlicher Hinweis auf einen offenen Wasserhahn, aber **keine Voraussetzung für Low-Flow-Erkennung**. Referenz ist der zeitgewichtete Median M. Die Toleranz beträgt `max(20 L/h, 0,10 × M)`. Mindestens 90 % der bestätigten Fensterzeit müssen innerhalb `M ± Toleranz` liegen. Median und Anteil werden nach bestätigter Intervalldauer gewichtet, nicht nach Anzahl der Reports. Das älteste Intervall wird an der Fenstergrenze anteilig gekürzt. Wie in F05 gehört die bestätigte Intervallzeit zum aktuellen gültigen Report; der erste Report einer neuen Kette liefert null Sekunden. Häufigere Reports erhalten kein zusätzliches Gewicht; die Abtastrate begrenzt weiterhin, welche tatsächlichen Schwankungen sichtbar sind.
+Gleichmäßigkeit ist ein zusätzlicher Hinweis auf einen offenen Wasserhahn, aber **keine Voraussetzung für Low-Flow-Erkennung**. Referenz ist der zeitgewichtete Median M. Die Toleranz beträgt `max(20 l/h, 0,10 × M)`. Mindestens 90 % der bestätigten Fensterzeit müssen innerhalb `M ± Toleranz` liegen. Median und Anteil werden nach bestätigter Intervalldauer gewichtet, nicht nach Anzahl der Reports. Das älteste Intervall wird an der Fenstergrenze anteilig gekürzt. Wie in F05 gehört die bestätigte Intervallzeit zum aktuellen gültigen Report; der erste Report einer neuen Kette liefert null Sekunden. Häufigere Reports erhalten kein zusätzliches Gewicht; die Abtastrate begrenzt weiterhin, welche tatsächlichen Schwankungen sichtbar sind.
 
-Jede echte Messung unter der Low-Schwelle löscht die Stabilitätsserie sofort, auch im Bereich 20–149 L/h und bei kurzen Ruhepausen. 15 Minuten stabil, 30 Sekunden Pause und weitere 15 Minuten stabil ergeben daher keinen Frühalarm. Der normale Low-Fortschritt folgt weiter seinen bestehenden Regeln. Erst **3 Minuten bestätigte Ruhe unter 20 L/h** setzen Low vollständig zurück: bei 179 Sekunden noch nicht, bei 180 Sekunden schon. Explizit gespeicherte Resetzeiten, etwa 7 Minuten, bleiben erhalten.
+Jede echte Messung unter der Low-Schwelle löscht die Stabilitätsserie sofort, auch im Bereich 20–149 l/h und bei kurzen Ruhepausen. 15 Minuten stabil, 30 Sekunden Pause und weitere 15 Minuten stabil ergeben daher keinen Frühalarm. Der normale Low-Fortschritt folgt weiter seinen bestehenden Regeln. Erst **3 Minuten bestätigte Ruhe unter 20 l/h** setzen Low vollständig zurück: bei 179 Sekunden noch nicht, bei 180 Sekunden schon. Explizit gespeicherte Resetzeiten, etwa 7 Minuten, bleiben erhalten.
 
 High verwirft die Low-Stabilität; die bestehende Low/High-Übernahme bleibt erhalten. Unknown, unavailable und ungültige Werte unterbrechen die Stabilität. Der erste Report nach Rückkehr liefert null Sekunden Evidenz. Round7 erhält den normalen bestätigten Low-Fortschritt beim Ausfall derselben Quelle. Interne Ticks liefern keine Evidenz. Ungleichmäßigkeit beendet kein bereits ACTIVE Low; dafür gilt weiterhin die physische Ruhe-/Resetbedingung. Die Stabilitätshistorie ist flüchtig und wird nach Neustart neu aufgebaut; aktive Ereignisse werden unverändert wiederhergestellt.
 
@@ -163,7 +163,7 @@ High verwirft die Low-Stabilität; die bestehende Low/High-Übernahme bleibt erh
 | `low_stability_early_minutes` | 30 min |
 | `low_stability_window_minutes` | 15 min |
 | `low_stability_relative_percent` | 10 % |
-| `low_stability_absolute_lph` | 20 L/h |
+| `low_stability_absolute_lph` | 20 l/h |
 | `low_stability_required_percent` | 90 % |
 
 Bei aktivierter Stabilität muss das Fenster positiv und höchstens so lang wie die Früherkennung sein; die Früherkennung muss kürzer als die normale Low-Erkennungszeit sein. Bei deaktivierter Stabilität blockiert diese Zeitrelation das Speichern nicht. Gespeicherte Zeiten bleiben erhalten und werden beim Wiedereinschalten wieder geprüft. Toleranzen müssen positiv sein; der Anteil muss größer als 0 und höchstens 100 % sein. Es entstehen keine zusätzlichen HA-Entities.
@@ -180,7 +180,7 @@ Nur fehlende Stabilitätszeiten werden für UI und Runtime gemeinsam abgeleitet:
 ## F04 V3 Upgrade und externe Quellen
 
 Wurden die Experteneinstellungen nie gespeichert, gilt jetzt eine Burst-Basis von
-3.500 L/h. Ein gespeicherter Wert bleibt erhalten, auch 2.000 L/h, die 1.1.0 beim
+3.500 l/h. Ein gespeicherter Wert bleibt erhalten, auch 2.000 l/h, die 1.1.0 beim
 Speichern der Optionen abgelegt hat. Bitte prüfen. Prüfe den Sicherheitsabstand zu normalem
 Maximalverbrauch. Beim Upgrade werden alte gemeinsame Lerndaten quarantänisiert;
 die effektive Burst-Schwelle kann sinken. Ein tatsächlicher Lern-Upgrade erzeugt
@@ -197,8 +197,8 @@ je Empfänger false. Einzelheiten zu Migration, Home-Zone und defekten Sensoren:
 auf 2.0.0 aktualisieren, HA neu starten und Browser bzw. Companion App neu laden.
 
 - **Von 1.1.0:** Alte Lerndaten werden quarantänisiert (ein Reparaturhinweis erklärt es). Wurden die
-  Experteneinstellungen nie gespeichert, gilt jetzt Burst 3.500 L/h. Ein gespeicherter Wert bleibt
-  erhalten, auch 2.000 L/h, die 1.1.0 beim Speichern der Optionen abgelegt hat. Bitte prüfen. Die Karte über *Karte hinzufügen →
+  Experteneinstellungen nie gespeichert, gilt jetzt Burst 3.500 l/h. Ein gespeicherter Wert bleibt
+  erhalten, auch 2.000 l/h, die 1.1.0 beim Speichern der Optionen abgelegt hat. Bitte prüfen. Die Karte über *Karte hinzufügen →
   Water Leak Guard* einfügen; eine alte manuelle Ressource `/local/water-leak-guard-card.js` entfernen.
 - **Von einer 2.0.0-Beta:** Kopplungen, Empfänger und Wanddisplays bleiben erhalten. Externe
   Lecksensoren sind nicht mehr ausgeschlossen (F04-FSR-H01 behoben). Unter *Ressourcen* erscheint der

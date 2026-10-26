@@ -92,7 +92,7 @@ Logik und ist unabhängig von persönlichem Mute/globalem ACK.
 
 Normalisierter Durchfluss in:
 
-**L/h**
+**l/h**
 
 Dieser Sensor ist diagnostisch.
 

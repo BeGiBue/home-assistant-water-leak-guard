@@ -196,13 +196,13 @@ Quittierung verändert nur den **Benachrichtigungszustand**.
 
 Beispiel Slow Leak:
 
-1. 7 L/h liegen 60 Minuten an.
+1. 7 l/h liegen 60 Minuten an.
 2. Slow Leak wird aktiv.
 3. Benutzer quittiert global.
 4. Pushmeldungen verstummen.
-5. 7 L/h liegen weiterhin an.
+5. 7 l/h liegen weiterhin an.
 6. Slow Leak bleibt aktiv.
-7. Erst 10 Minuten unter 3 L/h beenden ihn.
+7. Erst 10 Minuten unter 3 l/h beenden ihn.
 
 Das gleiche Prinzip gilt für alle vier Klassen mit jeweils eigener Resetbedingung.
 

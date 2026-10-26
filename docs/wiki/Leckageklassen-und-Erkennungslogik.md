@@ -28,17 +28,17 @@ Entscheidend ist nicht die Menge pro Minute, sondern die **Kontinuität**.
 
 | Parameter | Standard |
 |---|---:|
-| Startgrenze | 3 L/h |
-| oberes Slow-Band | unter 150 L/h |
+| Startgrenze | 3 l/h |
+| oberes Slow-Band | unter 150 l/h |
 | Erkennungszeit | 60 Minuten |
-| Resetgrenze | unter 3 L/h |
+| Resetgrenze | unter 3 l/h |
 | Resetzeit | 10 Minuten |
 
 ## Erkennungsentscheidung
 
 Ein Slow-Leak-Kandidat startet nur bei:
 
-`3 L/h <= Durchfluss < 150 L/h`
+`3 l/h <= Durchfluss < 150 l/h`
 
 und wird erst nach **60 Minuten kontinuierlich in diesem Band** aktiv.
 
@@ -48,8 +48,8 @@ Ein großer normaler Verbrauch – Dusche, Waschmaschine, Badewanne – soll nic
 
 Darum wird eine noch unbestätigte Slow-Leak-Messphase verworfen, wenn:
 
-- der Durchfluss unter 3 L/h sinkt oder
-- der Durchfluss auf 150 L/h oder mehr steigt
+- der Durchfluss unter 3 l/h sinkt oder
+- der Durchfluss auf 150 l/h oder mehr steigt
 
 ## Warum bleibt ein bestätigter Slow Leak bei höherem Verbrauch stehen?
 
@@ -57,15 +57,15 @@ Weil ein zusätzlicher großer Verbrauch den kleinen Verlust nicht beweisbar bee
 
 Beispiel:
 
-- WC-Spülkasten verliert dauerhaft 7 L/h
+- WC-Spülkasten verliert dauerhaft 7 l/h
 - Slow Leak wird bestätigt
-- anschließend duscht jemand mit 500 L/h
+- anschließend duscht jemand mit 500 l/h
 
 Der Duschverbrauch macht den WC-Verlust nicht dicht.
 
 Darum gilt für einen **aktiven** Slow Leak:
 
-> Nur mindestens 10 Minuten unter 3 L/h beenden den Alarm.
+> Nur mindestens 10 Minuten unter 3 l/h beenden den Alarm.
 
 Ein höherer Verbrauch löscht ihn nicht.
 
@@ -93,17 +93,17 @@ Low Flow ist ausdrücklich **nicht** dasselbe wie Slow Leak.
 
 | Parameter | Standard |
 |---|---:|
-| Startgrenze | 150 L/h |
-| oberes Low-Band | unter statischer High-Basis von 600 L/h |
+| Startgrenze | 150 l/h |
+| oberes Low-Band | unter statischer High-Basis von 600 l/h |
 | Erkennungszeit | 60 Minuten |
-| Ruhegrenze | unter 20 L/h |
+| Ruhegrenze | unter 20 l/h |
 | Resetzeit | 3 Minuten |
 
 ## Erkennungsentscheidung
 
 Ein Low-Flow-Kandidat beginnt im Bereich:
 
-`150 L/h <= Durchfluss < 600 L/h`
+`150 l/h <= Durchfluss < 600 l/h`
 
 Er wird aktiv, wenn dieser Nutzungskontext **60 Minuten** bestehen bleibt.
 
@@ -111,7 +111,7 @@ Kurze Schwankungen unterhalb der Startgrenze löschen die Beobachtung nicht sofo
 
 Stattdessen wird eine Ruhephase benötigt:
 
-`Durchfluss < 20 L/h für 3 Minuten`
+`Durchfluss < 20 l/h für 3 Minuten`
 
 ## Warum nicht bei jedem kurzen Abfall zurücksetzen?
 
@@ -125,14 +125,14 @@ Die 3-minütige Ruhephase bedeutet sinngemäß:
 
 ## Stabilitätserkennung (F08)
 
-Low Flow hat zwei Aktivierungswege im Band **150 L/h ≤ Durchfluss < statische High-Schwelle** (standardmäßig 600 L/h):
+Low Flow hat zwei Aktivierungswege im Band **150 l/h ≤ Durchfluss < statische High-Schwelle** (standardmäßig 600 l/h):
 
 - **Lang anhaltender Low Flow:** Der normale 60-Minuten-Pfad bleibt das Sicherheitsnetz, auch bei wechselndem Verbrauch.
 - **Besonders gleichmäßiger Low Flow:** Standardmäßig aktiviert; Früherkennung nach 30 Minuten zusammenhängender bestätigter Low-Evidenz, wenn das letzte 15-Minuten-Fenster stabil ist.
 
-Gleichmäßigkeit ist ein zusätzlicher Hinweis auf einen offenen Wasserhahn, aber **keine Voraussetzung für Low-Flow-Erkennung**. Referenz ist der zeitgewichtete Median M. Die Toleranz beträgt `max(20 L/h, 0,10 × M)`. Mindestens 90 % der bestätigten Fensterzeit müssen innerhalb `M ± Toleranz` liegen. Median und Anteil werden nach bestätigter Intervalldauer gewichtet, nicht nach Anzahl der Reports. Das älteste Intervall wird an der Fenstergrenze anteilig gekürzt. Wie in F05 gehört die bestätigte Intervallzeit zum aktuellen gültigen Report; der erste Report einer neuen Kette liefert null Sekunden. Häufigere Reports erhalten kein zusätzliches Gewicht; die Abtastrate begrenzt weiterhin, welche tatsächlichen Schwankungen sichtbar sind.
+Gleichmäßigkeit ist ein zusätzlicher Hinweis auf einen offenen Wasserhahn, aber **keine Voraussetzung für Low-Flow-Erkennung**. Referenz ist der zeitgewichtete Median M. Die Toleranz beträgt `max(20 l/h, 0,10 × M)`. Mindestens 90 % der bestätigten Fensterzeit müssen innerhalb `M ± Toleranz` liegen. Median und Anteil werden nach bestätigter Intervalldauer gewichtet, nicht nach Anzahl der Reports. Das älteste Intervall wird an der Fenstergrenze anteilig gekürzt. Wie in F05 gehört die bestätigte Intervallzeit zum aktuellen gültigen Report; der erste Report einer neuen Kette liefert null Sekunden. Häufigere Reports erhalten kein zusätzliches Gewicht; die Abtastrate begrenzt weiterhin, welche tatsächlichen Schwankungen sichtbar sind.
 
-Jede echte Messung unter der Low-Schwelle löscht die Stabilitätsserie sofort, auch im Bereich 20–149 L/h und bei kurzen Ruhepausen. 15 Minuten stabil, 30 Sekunden Pause und weitere 15 Minuten stabil ergeben daher keinen Frühalarm. Der normale Low-Fortschritt folgt weiter seinen bestehenden Regeln. Erst **3 Minuten bestätigte Ruhe unter 20 L/h** setzen Low vollständig zurück: bei 179 Sekunden noch nicht, bei 180 Sekunden schon. Explizit gespeicherte Resetzeiten, etwa 7 Minuten, bleiben erhalten.
+Jede echte Messung unter der Low-Schwelle löscht die Stabilitätsserie sofort, auch im Bereich 20–149 l/h und bei kurzen Ruhepausen. 15 Minuten stabil, 30 Sekunden Pause und weitere 15 Minuten stabil ergeben daher keinen Frühalarm. Der normale Low-Fortschritt folgt weiter seinen bestehenden Regeln. Erst **3 Minuten bestätigte Ruhe unter 20 l/h** setzen Low vollständig zurück: bei 179 Sekunden noch nicht, bei 180 Sekunden schon. Explizit gespeicherte Resetzeiten, etwa 7 Minuten, bleiben erhalten.
 
 High verwirft die Low-Stabilität; die bestehende Low/High-Übernahme bleibt erhalten. Unknown, unavailable und ungültige Werte unterbrechen die Stabilität. Der erste Report nach Rückkehr liefert null Sekunden Evidenz. Round7 erhält den normalen bestätigten Low-Fortschritt beim Ausfall derselben Quelle. Interne Ticks liefern keine Evidenz. Ungleichmäßigkeit beendet kein bereits ACTIVE Low; dafür gilt weiterhin die physische Ruhe-/Resetbedingung. Die Stabilitätshistorie ist flüchtig und wird nach Neustart neu aufgebaut; aktive Ereignisse werden unverändert wiederhergestellt.
 
@@ -152,7 +152,7 @@ Auch hier gilt:
 
 Ein aktiver Low Flow endet deshalb nur nach der konfigurierten Ruhebedingung:
 
-**3 Minuten unter 20 L/h.**
+**3 Minuten unter 20 l/h.**
 
 ## Ein-/Ausschaltbarkeit
 
@@ -181,22 +181,22 @@ High Flow ist deshalb bewusst **kein sofortiger Leckalarm nur aufgrund einer hoh
 
 | Parameter | Standard |
 |---|---:|
-| statische Startschwelle | 600 L/h |
+| statische Startschwelle | 600 l/h |
 | Erkennungszeit | 45 Minuten |
 | Mengengrenze | 500 L |
-| Ruhegrenze | unter 100 L/h |
+| Ruhegrenze | unter 100 l/h |
 | Resetzeit | 5 Minuten |
 
 ## Statische High-Flow-Schwelle
 
-Die konfigurierte Experten-Schwelle beträgt standardmäßig 600 L/h.
+Die konfigurierte Experten-Schwelle beträgt standardmäßig 600 l/h.
 Lernen, manuelles Maximum und Hydraulik erhöhen sie nicht.
 Low endet exakt darunter; High beginnt exakt an der Schwelle.
 
 ## Wiederholt bestätigte normale High-Episoden
 
-F04 V3 führt einen getrennten Langzeitkanal ein. High bleibt statisch: 600 L/h,
-45 Minuten ODER 500 Liter und fünf Minuten strikt unter 100 L/h als Standard.
+F04 V3 führt einen getrennten Langzeitkanal ein. High bleibt statisch: 600 l/h,
+45 Minuten ODER 500 Liter und fünf Minuten strikt unter 100 l/h als Standard.
 Nur vollständig beobachtete, sauber beendete High-MONITORING-Episoden mit Peak
 **unter der konfigurierten Burst-Basis** dürfen kandidieren. Drei unabhängige
 Episoden mit `max_peak <= min_peak × 1,15` bestätigen das erste Maximum. Jede
@@ -253,7 +253,7 @@ Der Bypass hat eine automatische Ablaufzeit.
 
 Ein aktiver High Flow endet regulär erst, wenn:
 
-**5 Minuten unter 100 L/h**
+**5 Minuten unter 100 l/h**
 
 gemessen wurden.
 
@@ -280,11 +280,11 @@ Burst Leak ist die höchste Gefahrenklasse.
 
 | Parameter | Standard |
 |---|---:|
-| absolute Basisgrenze | 3500 L/h (neue/nicht gesetzte Konfiguration) |
+| absolute Basisgrenze | 3500 l/h (neue/nicht gesetzte Konfiguration) |
 | absolute Bestätigung | 30 Sekunden |
-| schneller Anstieg | +1000 L/h normiert auf 10 s |
+| schneller Anstieg | +1000 l/h normiert auf 10 s |
 | Rapid-Rise-Bestätigung | 10 Sekunden |
-| Resetgrenze | unter 500 L/h |
+| Resetgrenze | unter 500 l/h |
 | Resetzeit | 60 Sekunden |
 | adaptiver Faktor | 1,80 × Normalreferenz |
 
@@ -304,7 +304,7 @@ Die Engine berechnet den positiven Durchflussanstieg normiert auf 10 Sekunden.
 
 Standard:
 
-`Anstieg >= 1000 L/h je 10 s`
+`Anstieg >= 1000 l/h je 10 s`
 
 Zusätzlich muss der aktuelle Durchfluss mindestens die **effektive Burst-Grenze**
 erreichen. Rapid Rise beschleunigt nur diesen Burst-Kandidaten und beginnt seine
@@ -334,7 +334,7 @@ Deshalb existiert in der Burst-Auswertung kein High-Flow-Bypass.
 
 Burst endet erst bei:
 
-**60 Sekunden unter 500 L/h.**
+**60 Sekunden unter 500 l/h.**
 
 Ein kurzer Einbruch reicht nicht.
 
@@ -368,9 +368,9 @@ Niedrigere aktive Klassen können intern weiterlaufen.
 
 | Klasse | Wird aktiv durch | Bleibt aktiv bis |
 |---|---|---|
-| Slow Leak | 3–<150 L/h für 60 min | <3 L/h für 10 min |
-| Low Flow | 150–<600 L/h, Zeitkontext 60 min | <20 L/h für 3 min |
-| High Flow | effektive High-Grenze + 45 min **oder** 500 L | <100 L/h für 5 min oder bewusster High-Bypass |
-| Burst Leak | absolute Grenze 30 s **oder** Rapid Rise 10 s | <500 L/h für 60 s |
+| Slow Leak | 3–<150 l/h für 60 min | <3 l/h für 10 min |
+| Low Flow | 150–<600 l/h, Zeitkontext 60 min | <20 l/h für 3 min |
+| High Flow | effektive High-Grenze + 45 min **oder** 500 L | <100 l/h für 5 min oder bewusster High-Bypass |
+| Burst Leak | absolute Grenze 30 s **oder** Rapid Rise 10 s | <500 l/h für 60 s |
 
 Diese Resetbedingungen sind der zentrale Grund, warum ein quittierter Alarm weiterhin als aktiv angezeigt werden kann.

@@ -32,7 +32,7 @@
  * License: AGPL-3.0-only (same as the integration).
  */
 
-const CARD_VERSION = "3.0.0";
+const CARD_VERSION = "3.0.1";
 const DOMAIN = "water_leak_detection";
 const CARD_TAG = "water-leak-guard-card";
 const EDITOR_TAG = "water-leak-guard-card-editor";
@@ -131,7 +131,9 @@ const I18N = {
       missing: "Diese Version der Integration meldet ihren Überwachungszustand nicht (ab 1.2.0-beta.3). Ob ausgewertet wird, ist unbekannt.",
     },
     monitoring_details: "Grund und Messherkunft",
-    monitoring_ok: "Hydraulik aktiv",
+    monitoring_ok: "Hydraulische Überwachung aktiv",
+    unit_lph: "l/h",
+    unit_l: "l",
     detail: {
       reason: "Grund",
       source: "Messquelle",
@@ -319,7 +321,9 @@ const I18N = {
       missing: "This integration version does not report its monitoring state (available from 1.2.0-beta.3). Whether it is evaluating is unknown.",
     },
     monitoring_details: "Reason and measurement provenance",
-    monitoring_ok: "Hydraulics active",
+    monitoring_ok: "Hydraulic monitoring active",
+    unit_lph: "L/h",
+    unit_l: "L",
     detail: {
       reason: "Reason",
       source: "Source",
@@ -1270,7 +1274,7 @@ class WaterLeakGuardCard extends HTMLElement {
   }
 
   /**
-   * True only if the compact "Hydraulics active" pill may replace the monitoring
+   * True only if the compact "Hydraulic monitoring active" pill may replace the monitoring
    * row: status sensor present and available, monitoring entity present and
    * `active`, no source/store problem and no unreachable external sensor.
    */
@@ -1519,7 +1523,7 @@ class WaterLeakGuardCard extends HTMLElement {
                 <div class="event-meta">
                   ${ev.since ? `${esc(t("since"))} ${esc(formatClock(this._hass, ev.since))}` : ""}
                   ${duration ? ` · ${esc(t("duration"))} ${esc(duration)}` : ""}
-                  ${isDisplay && volume != null && !ev.external ? ` · ${esc(t("volume"))} ${esc(formatNumber(this._hass, volume, 1))} L` : ""}
+                  ${isDisplay && volume != null && !ev.external ? ` · ${esc(t("volume"))} ${esc(formatNumber(this._hass, volume, 1))} ${esc(t("unit_l"))}` : ""}
                 </div>
               </div>
               <span class="pill ${acked ? "pill-ok" : "pill-alarm"}"
@@ -1568,7 +1572,7 @@ class WaterLeakGuardCard extends HTMLElement {
         <div class="block-head">
           <span class="flow-label">${esc(t("flow"))}${monitoringPill}</span>
           <button class="link" data-action="more-info" data-entity="${esc(map.current_flow || "")}" data-focus="flow" ${map.current_flow ? "" : "disabled"}>
-            ${flow == null ? esc(t("flow_unavailable")) : `<b class="big">${esc(formatNumber(this._hass, flow, flow < 10 ? 1 : 0))}</b> L/h`}
+            ${flow == null ? esc(t("flow_unavailable")) : `<b class="big">${esc(formatNumber(this._hass, flow, flow < 10 ? 1 : 0))}</b> ${esc(t("unit_lph"))}`}
           </button>
         </div>
         <div class="meter" role="img" aria-label="${esc(t("flow"))}">
@@ -1577,8 +1581,8 @@ class WaterLeakGuardCard extends HTMLElement {
           ${burst ? `<div class="tick tick-burst" style="left:${pos(burst).toFixed(2)}%"></div>` : ""}
         </div>
         <div class="legend">
-          ${high ? `<span><i class="key"></i>${esc(t("high"))} ${esc(formatNumber(this._hass, high))} L/h</span>` : ""}
-          ${burst ? `<span><i class="key key-burst"></i>${esc(t("burst"))} ${esc(formatNumber(this._hass, burst))} L/h</span>` : ""}
+          ${high ? `<span><i class="key"></i>${esc(t("high"))} ${esc(formatNumber(this._hass, high))} ${esc(t("unit_lph"))}</span>` : ""}
+          ${burst ? `<span><i class="key key-burst"></i>${esc(t("burst"))} ${esc(formatNumber(this._hass, burst))} ${esc(t("unit_lph"))}</span>` : ""}
         </div>
       </section>`;
   }
@@ -1732,8 +1736,8 @@ class WaterLeakGuardCard extends HTMLElement {
           <div class="progress"><div style="width:${pct.toFixed(1)}%"></div></div>
           <div class="stats">
             ${stat(cov?.entity_id || conf.entity_id, "coverage", `${esc(days)}/${esc(windowDays)}`, t("days_unit"))}
-            ${stat(learned?.entity_id || conf.entity_id, "learned_max", fmt(learnedVal), "L/h")}
-            ${stat(longTerm?.entity_id, "long_term_max", fmt(longVal), "L/h", "long_term_max_long")}
+            ${stat(learned?.entity_id || conf.entity_id, "learned_max", fmt(learnedVal), t("unit_lph"))}
+            ${stat(longTerm?.entity_id, "long_term_max", fmt(longVal), t("unit_lph"), "long_term_max_long")}
             ${stat(undefined, "samples", samples == null ? "–" : esc(formatNumber(this._hass, samples)), "")}
           </div>
           ${isAdmin ? `<div class="actions end">

@@ -8,7 +8,7 @@
 Haushalte unterscheiden sich stark.
 
 High Flow beginnt immer an der konfigurierten statischen Schwelle
-(Standard 600 L/h). Dauer und Volumen bestätigen den Alarm.
+(Standard 600 l/h). Dauer und Volumen bestätigen den Alarm.
 
 Für Burst kombiniert der Wasserwächter feste Basisgrenzen, kontinuierliches
 Lernen, ein optional manuell bekanntes Maximum und hydraulische
@@ -25,7 +25,7 @@ Stattdessen lernt das System **abgeschlossene normale Wasserverbrauchsepisoden**
 
 Eine Episode:
 
-- beginnt ab etwa 1 L/h
+- beginnt ab etwa 1 l/h
 - verfolgt ihren maximalen Durchfluss
 - gilt erst nach 120 Sekunden sehr niedrigen Durchflusses als abgeschlossen
 
@@ -52,8 +52,8 @@ Sonst könnte bereits ein einzelnes knapp vor der Bestätigung endendes gefährl
 
 ## Wiederholt bestätigte normale High-Episoden
 
-F04 V3 führt einen getrennten Langzeitkanal ein. High bleibt statisch: 600 L/h,
-45 Minuten ODER 500 Liter und fünf Minuten strikt unter 100 L/h als Standard.
+F04 V3 führt einen getrennten Langzeitkanal ein. High bleibt statisch: 600 l/h,
+45 Minuten ODER 500 Liter und fünf Minuten strikt unter 100 l/h als Standard.
 Nur vollständig beobachtete, sauber beendete High-MONITORING-Episoden mit Peak
 **unter der konfigurierten Burst-Basis** dürfen kandidieren. Drei unabhängige
 Episoden mit `max_peak <= min_peak × 1,15` bestätigen das erste Maximum. Jede
@@ -190,7 +190,7 @@ Die Normalreferenz ist dann das Maximum aus:
 
 # 7. Statische High-Grenze
 
-Standard: **600 L/h**, in Expertenoptionen konfigurierbar.
+Standard: **600 l/h**, in Expertenoptionen konfigurierbar.
 High beginnt exakt hier mit MONITORING; Low endet strikt darunter.
 Lernen, manuelles Maximum und Hydraulik erhöhen High nicht.
 Dauer, Volumen, Quiet/Reset und Bypass bleiben unverändert.
@@ -204,7 +204,7 @@ Alarmepisoden bleiben stets vom Lernen ausgeschlossen.
 
 Basis:
 
-**3500 L/h**
+**3500 l/h**
 
 Kandidat:
 

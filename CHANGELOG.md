@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.1 — 2026-10-26
+
+- Karte: Der grüne Hinweis heißt jetzt „Hydraulische Überwachung aktiv“ (englisch „Hydraulic monitoring active“) statt „Hydraulik aktiv“.
+- Einheiten: Liter wird in deutschen Texten als `l` geschrieben (`l/h`), in englischen Texten als `L` (`L/h`). Das betrifft die Karte, den deutschen Benachrichtigungstext, die Zahlenfelder im Konfigurationsdialog und die deutschen Wiki-Seiten. Die Einheit der Home-Assistant-Entitäten bleibt `L/h`; die Integration akzeptiert beide Schreibweisen.
+- Versionsangaben von Integration, Paket und mitgelieferter Karte auf 3.0.1 abgestimmt.
+
 ## 3.0.0 — 2026-10-24
 
 - Aufnahme in den offiziellen HACS-Katalog; die reguläre Installation erfolgt über die HACS-Suche.

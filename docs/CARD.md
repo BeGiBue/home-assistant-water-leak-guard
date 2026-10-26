@@ -84,7 +84,7 @@ views:
 - **Überwachung kompakt:** Ist die hydraulische Überwachung bestätigt aktiv, sind Status- und
   Überwachungs-Entität verfügbar, ist weder die Messquelle gestört (`source_unavailable`,
   `source_available: false`) noch der Laufzeitspeicher beschädigt und ist kein externer Sensor
-  unerreichbar, ersetzt ein grüner Hinweis „Hydraulik aktiv“ in der Durchflusszeile die eigene Zeile (ohne
+  unerreichbar, ersetzt ein grüner Hinweis „Hydraulische Überwachung aktiv“ in der Durchflusszeile die eigene Zeile (ohne
   Durchflussabschnitt steht er im Kopf). In jedem anderen Zustand erscheint die volle Zeile
   „Hydraulische Überwachung“ mit Grund und Details wie bisher. Grün bleibt bestätigt aktiver
   Überwachung vorbehalten.

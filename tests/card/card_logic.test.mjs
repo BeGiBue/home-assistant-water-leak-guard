@@ -122,6 +122,13 @@ test("idle: no switch controls, no links to switch entities", async () => {
 
 const expandedOf = (h, key) => h.match(new RegExp(`data-section="${key}"[^>]*aria-expanded="(true|false)"`))?.[1];
 
+test("units follow the language: l/h in German, L/h in English", async () => {
+  const de = html(await mount({ lang: "de" }));
+  assert.ok(/<\/b> l\/h/.test(de) && !de.includes("L/h"), "German uses l/h only");
+  const en = html(await mount({ lang: "en" }));
+  assert.ok(/<\/b> L\/h/.test(en) && !/\bl\/h/.test(en), "English uses L/h only");
+});
+
 test("sections: expanded by default; toggle survives hass updates", async () => {
   const card = await mount();
   assert.equal(expandedOf(html(card), "bypass"), "true");
@@ -208,7 +215,7 @@ const toneOf = (h) => h.match(/<ha-card class="tone-(\w+)"/)?.[1];
 
 test("hydraulics pill: one positive case (flow row, and header without flow)", async () => {
   let card = await mount();
-  assert.ok(html(card).includes(PILL) && html(card).includes("Hydraulik aktiv"));
+  assert.ok(html(card).includes(PILL) && html(card).includes("Hydraulische Überwachung aktiv"));
   assert.ok(!html(card).includes('class="monitor '), "no separate row");
   assert.equal(toneOf(html(card)), "ok");
   card.disconnectedCallback();

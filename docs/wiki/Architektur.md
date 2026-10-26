@@ -91,7 +91,7 @@ Der Kern arbeitet unabhängig von der Einheit des Quellsensors.
 
 Intern:
 
-- Durchfluss: **L/h**
+- Durchfluss: **l/h**
 - Volumen: **L**
 
 Negative und nicht endliche Durchflusswerte sind ungültige Messungen. Sie werden niemals als 0-Durchfluss oder Ruhe-Evidenz ausgewertet. Bestätigte Leckagen bleiben erhalten.
@@ -108,7 +108,7 @@ Wenn der Durchflusssensor `unknown`, `unavailable` oder nicht sinnvoll konvertie
 
 Grund:
 
-> Fehlende Messwerte sind kein Beweis für 0 L/h.
+> Fehlende Messwerte sind kein Beweis für 0 l/h.
 
 ## 6. Volumenberechnung
 
