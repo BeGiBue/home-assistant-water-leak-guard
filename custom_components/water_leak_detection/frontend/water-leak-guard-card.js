@@ -131,7 +131,7 @@ const I18N = {
       missing: "Diese Version der Integration meldet ihren Überwachungszustand nicht (ab 1.2.0-beta.3). Ob ausgewertet wird, ist unbekannt.",
     },
     monitoring_details: "Grund und Messherkunft",
-    monitoring_ok: "Hydraulik aktiv",
+    monitoring_ok: "Hydraulische Überwachung aktiv",
     detail: {
       reason: "Grund",
       source: "Messquelle",
@@ -319,7 +319,7 @@ const I18N = {
       missing: "This integration version does not report its monitoring state (available from 1.2.0-beta.3). Whether it is evaluating is unknown.",
     },
     monitoring_details: "Reason and measurement provenance",
-    monitoring_ok: "Hydraulics active",
+    monitoring_ok: "Hydraulic monitoring active",
     detail: {
       reason: "Reason",
       source: "Source",
@@ -1270,7 +1270,7 @@ class WaterLeakGuardCard extends HTMLElement {
   }
 
   /**
-   * True only if the compact "Hydraulics active" pill may replace the monitoring
+   * True only if the compact "Hydraulic monitoring active" pill may replace the monitoring
    * row: status sensor present and available, monitoring entity present and
    * `active`, no source/store problem and no unreachable external sensor.
    */

@@ -208,7 +208,7 @@ const toneOf = (h) => h.match(/<ha-card class="tone-(\w+)"/)?.[1];
 
 test("hydraulics pill: one positive case (flow row, and header without flow)", async () => {
   let card = await mount();
-  assert.ok(html(card).includes(PILL) && html(card).includes("Hydraulik aktiv"));
+  assert.ok(html(card).includes(PILL) && html(card).includes("Hydraulische Überwachung aktiv"));
   assert.ok(!html(card).includes('class="monitor '), "no separate row");
   assert.equal(toneOf(html(card)), "ok");
   card.disconnectedCallback();

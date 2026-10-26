@@ -76,7 +76,7 @@ views:
 ```
 
 Ist die hydraulische Überwachung bestätigt aktiv und nichts gestört (auch kein externer Sensor
-unerreichbar), zeigt ein grüner Hinweis „Hydraulik aktiv“ in der Durchflusszeile das an; in jedem anderen
+unerreichbar), zeigt ein grüner Hinweis „Hydraulische Überwachung aktiv“ in der Durchflusszeile das an; in jedem anderen
 Zustand erscheint die volle Zeile mit Grund. Sind Speicher oder Messquelle gestört, heißt es gelb
 „Überwachung eingeschränkt“ statt „Alles ruhig“. Der Stummschalt-Knopf nennt den
 gekoppelten Empfänger („Für Bea stummschalten“). Hell/dunkel und „Bewegung reduzieren“ werden beachtet.
