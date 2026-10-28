@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.2 — 2026-10-28
+
+- Dokumentation und Release-Ablauf aufgeräumt: Prüf- und Release-Notes-Dateien entfernt, doppelte Anleitungen auf die Wiki-Seiten verwiesen. Der Release-Text kommt jetzt aus dem CHANGELOG. Keine Funktionsänderung.
+
 ## 3.0.1 — 2026-10-26
 
 - Karte: Der grüne Hinweis heißt jetzt „Hydraulische Überwachung aktiv“ (englisch „Hydraulic monitoring active“) statt „Hydraulik aktiv“.
