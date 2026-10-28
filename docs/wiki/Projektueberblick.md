@@ -147,9 +147,8 @@ Die niedrigeren Detektoren dürfen intern weiter aktiv bleiben. Das ist wichtig,
 **2.0.0** (15. Oktober 2026) ist der stabile Stand: hydraulische Erkennung (Slow, Low, High, Burst),
 Benachrichtigungen, die mitgelieferte [Dashboard-Karte](Dashboard-Karte) 0.6.2 mit Gerätekopplung und
 Wanddisplay sowie **externe Lecksensoren**. Die frühere Beta-Einschränkung auf Installationen ohne
-externe Sensoren entfällt, weil F04-FSR-H01 in 2.0.0 behoben ist ([Details](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/F04_FSR_H01.md)).
+externe Sensoren entfällt, weil F04-FSR-H01 in 2.0.0 behoben ist.
 Die Integration betätigt selbst kein Ventil. Nicht auf jeder echten Hardware geprüft.
-[Release Notes](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/RELEASE_NOTES_2.0.0.md).
 
 Die folgenden Abschnitte „Betriebsstand Beta.3“ und „Betriebsstand 2.0.0-beta.1“ sind historisch.
 
@@ -164,9 +163,9 @@ bestehende ACTIVE-Ereignisse und Shutoff-Beiträge bleiben erhalten.
 
 Die Beta war auf hydraulische Erkennung/Benachrichtigungen ohne konfigurierte
 externe Sensoren oder gespeicherte externe Alarmdatensätze beschränkt. F04-FSR-H01
-(beschädigte gespeicherte Daten konfigurierter externer Melder) ist in 2.0.0 behoben ([Details](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/F04_FSR_H01.md)). Softwaretests und der am 14. Oktober 2026
+(beschädigte gespeicherte Daten konfigurierter externer Melder) ist in 2.0.0 behoben. Softwaretests und der am 14. Oktober 2026
 vom Benutzer bestätigte erfolgreiche Hydrus-Neustart mit Beta.3 sind getrennte
-Nachweise; der Einzeltest belegt nicht sämtliche Ausfall-/Neustartszenarien. [Beta-Chronologie](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/BETA_1.2.0.md).
+Nachweise; der Einzeltest belegt nicht sämtliche Ausfall-/Neustartszenarien.
 [Kartendokumentation](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/CARD.md).
 
 ## Betriebsstand 2.0.0-beta.1 (historisch)

@@ -3,6 +3,7 @@
 # against force moves with GitHub Rulesets/Tag Protection for a full SHA guarantee.
 set -euo pipefail
 release_version="${1:?release version required}"
+notes_file="${RELEASE_NOTES_FILE:-release-notes.md}"
 [[ "${2:-}" == "--target" && "${3:-}" == "$GITHUB_SHA" ]] || exit 1
 
 resolve_tag() {
@@ -69,7 +70,7 @@ if ! $existing_release; then
   if ! gh release create "$release_version" "${prerelease_args[@]}" \
       --repo "$GITHUB_REPOSITORY" --verify-tag --target "$GITHUB_SHA" \
       --title "Water Leak Guard ${release_version}" \
-      --notes-file "RELEASE_NOTES_${release_version}.md"; then
+      --notes-file "$notes_file"; then
     # A racing creator may have created the same release. Accept only a fully
     # verified release/tag, never an unchecked nonzero create result.
     verify_release

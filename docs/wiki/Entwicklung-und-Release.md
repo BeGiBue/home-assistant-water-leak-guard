@@ -108,7 +108,6 @@ Deutsch wird erst innerhalb Home Assistant zu:
 Das Repository enthält:
 
 - `CHANGELOG.md`
-- `RELEASE_NOTES_1.0.2.md`
 - manuellen Publish-Workflow
 
 Der Release-Workflow prüft die Manifest-Version **und** `integration_type: "service"` und erzeugt den GitHub Release `1.0.2`.
@@ -191,7 +190,6 @@ installierter Beta.3 und realem Hydrus: kein Fehlalarm oder Repair, 11 Sekunden
 Gesperrt, anschließend automatisch Aktiv, `verified_original_measurement`. Das
 ist kein von Codex selbst ausgeführter Hardwaretest und kein Nachweis aller
 Neustart-/MQTT-Ausfallfälle. Die Dauer ist kein garantierter Startwert.
-[Chronologie und Haushaltsprüfung](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/BETA_1.2.0.md).
 
 Diese Runde aktualisiert nur Repository-Dokumentation/Wiki-Quellen; ein neuer
 Release ist nicht nötig. Der manuelle Workflow **Publish Wiki** synchronisiert
@@ -204,12 +202,11 @@ Die früheren Release-/Korrekturrunden auf dieser Seite sind historischer Kontex
 Erster stabiler Stand seit 1.1.0. Enthält alle Betas von 1.2.0 und 2.0.0 sowie den Fix für
 F04-FSR-H01: Beschädigte gespeicherte Daten konfigurierter externer Melder halten Alarm und
 Absperranforderung in der Recovery-Sperre; eine von HA als `.corrupt.*` beiseitegelegte Datei sperrt
-jetzt bei jeder Installation, auch rein hydraulisch ([Details](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/F04_FSR_H01.md)). Damit sind externe
+jetzt bei jeder Installation, auch rein hydraulisch. Damit sind externe
 Lecksensoren nicht mehr ausgeschlossen. Karte 0.6.2: robuster Start (Loader-Ressource gegen den
 „Konfigurationsfehler“ nach einem HA-Neustart, gehärteter `hass`-Setter). Wanddisplay-Formulare
-verlinken das TouchKio-Beispiel. Mehrere Runden unabhängiger Review anhand des Codes; Validate,
+verlinken das TouchKio-Beispiel. Validate,
 Hassfest und HACS bestanden. Nicht auf jeder echten Hardware geprüft.
-[Release Notes](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/RELEASE_NOTES_2.0.0.md).
 
 Die folgenden Abschnitte sind historisch.
 
@@ -217,9 +214,7 @@ Die folgenden Abschnitte sind historisch.
 
 Karte 0.6.1 mit standardmäßig offenen Abschnitten (Option `collapsed`), neuer Empfängertyp Wanddisplay
 (z. B. TouchKio) mit Kiosk-Benutzer- oder Anmelde-Kopplung, zustandsabhängige Ventil-Symbole der
-Absperranforderung. Zusammengeführt aus `feature/display-recipient`; mehrere Runden unabhängiger Review
-anhand des Codes, Validate, Hassfest und HACS bestanden. Kein Test in einer echten Installation.
-[Release Notes](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/RELEASE_NOTES_2.0.0-beta.3.md).
+Absperranforderung. Validate, Hassfest und HACS bestanden. Kein Test in einer echten Installation.
 
 ## 2.0.0-beta.2 – 14. Oktober 2026
 
@@ -227,20 +222,13 @@ Karte 0.5.0: kompaktes, einklappbares Layout (ruhig einspaltig ca. 335 px, passt
 und Raspberry Pi 7″ 800×480; zweispaltig ab ca. 600 px Kartenbreite), keine Ein/Aus-Schalter mehr,
 alarmbeendende Aktionen nur für ein gekoppeltes Gerät zuhause, nichts Grünes bei eingeschränkter
 Überwachung. Empfänger lassen sich mit einem HA-Benutzer oder einer einzelnen Anmeldung koppeln.
-Zusammengeführt aus `feature/card-compact` und `docs/readme-hacs-card-preview` (README mit HACS-tauglichem
-Logo und Kartenvorschau). Mehrere Runden unabhängiger Review anhand des Codes; Validate, Hassfest und
+README mit HACS-tauglichem Logo und Kartenvorschau. Validate, Hassfest und
 HACS bestanden. Kein Test in einer echten Installation.
-[Release Notes](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/RELEASE_NOTES_2.0.0-beta.2.md).
 
 ## 2.0.0-beta.1 – 14. Oktober 2026
 
 Erste Version mit Dashboard-Karte als Bestandteil der Integration (Karte 0.4.1): getrennte Anzeige von
 Alarm und hydraulischer Überwachung, Rückfragen vor dem Beenden von Alarmen durch Bedienung,
 Gerätekopplung im Empfängereintrag und Kartenaktionen über WebSocket-Befehle mit Prüfung im Backend.
-Zusammengeführt aus PR #18 (Überwachungsanzeige), #19 (Backend-Vertrag und Kopplung), #22 (Auslieferung
-mit der Integration) und #23 (Kartenaktionen). Jede Etappe wurde von einer unabhängigen Review-Instanz
-anhand des Codes geprüft; Validate, Hassfest und HACS bestanden. Kein Test in einer echten Installation.
-Beta-Umfang damals ohne externe Lecksensoren (H01 damals offen; in 2.0.0 behoben:
-[F04-FSR-H01](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/F04_FSR_H01.md)).
-[Release Notes](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/RELEASE_NOTES_2.0.0-beta.1.md) ·
-[Beta 2.0.0](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/BETA_2.0.0.md).
+Validate, Hassfest und HACS bestanden. Kein Test in einer echten Installation.
+Beta-Umfang damals ohne externe Lecksensoren (H01 damals offen; in 2.0.0 behoben).

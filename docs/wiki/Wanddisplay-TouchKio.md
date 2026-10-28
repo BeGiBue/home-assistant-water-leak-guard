@@ -179,7 +179,7 @@ Absperranforderung ([Alarmstufen und Quittierung](Alarmstufen-und-Quittierung)).
 - **Karte zeigt „Konfigurationsfehler“:** Meist hat die Seite das Kartenmodul nicht rechtzeitig
   bekommen (Start von Home Assistant). Seite neu laden. Die Integration legt dafür unter *Einstellungen →
   Dashboards → ⋮ → Ressourcen* den Eintrag „water-leak-guard-card loader“ an; **nicht löschen**. Details:
-  [Troubleshooting der Karte](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/TROUBLESHOOTING.md).
+  [Troubleshooting](Troubleshooting).
 - **Karte fehlt nach dem Update:** Home Assistant neu starten, auf dem Kiosk **hart neu laden** bzw.
   den Browser-Cache leeren; in der Companion App den Frontend-Cache zurücksetzen. Prüfe, ob der Eintrag
   „water-leak-guard-card loader“ vorhanden ist (nicht im YAML-Ressourcenmodus).

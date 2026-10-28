@@ -195,4 +195,4 @@ Tracker nicht zuhause“. Technische Einzelheiten zu Befehlen und Fehlercodes:
 Getestet mit der vollständigen Testsuite in der CI und mit simuliertem Home Assistant im Browser; jede
 Etappe wurde unabhängig anhand des Codes geprüft. Ein Test in einer echten Installation steht aus.
 Bewusst offene Punkte mit geringer Auswirkung und alle Details:
-[Kartendokumentation](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/CARD.md) · [Beta 2.0.0](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/BETA_2.0.0.md).
+[Kartendokumentation](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/CARD.md).

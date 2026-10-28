@@ -3,7 +3,7 @@
 **Status:** Karte **0.6.2** mit Water Leak Guard **2.0.0** (stabil; Abschnitte standardmäßig offen, Option `collapsed`, Wanddisplay-Empfänger, robuster Start mit Loader-Ressource). Die Karte ist eine Ansicht auf die vorhandenen
 Entitäten, Dienste und Kartenbefehle und **keine Vertrauensgrenze**: Sie enthält weder Empfänger-Token noch
 Reset-Nonce, und Berechtigung, Anwesenheit und erlaubte Alarmaktionen prüft ausschließlich das
-Backend. Die Integration bleibt ohne Karte voll funktionsfähig (SPEC §1051).
+Backend. Die Integration bleibt ohne Karte voll funktionsfähig.
 
 **Nicht nachgewiesen:** Die Karte ist bisher nur mit simuliertem Home Assistant im Browser getestet
 (Chromium, Desktop- und Handybreite, hell/dunkel). Ein Test in einer echten HA-Installation steht aus.
@@ -184,7 +184,7 @@ steht immer in der eigenen Zeile **Hydraulische Überwachung**.
 
 Bedeutung der Zustände, Attribute und Zeitbasis:
 [Hydraulische Überwachung](CONFIGURATION.md#hydraulische-überwachung) ·
-[Diagnose bei „Warte auf Messung“ oder „Gesperrt“](TROUBLESHOOTING.md#hydraulic-monitoring-waiting-or-blocked).
+[Diagnose bei „Warte auf Messung“ oder „Gesperrt“](wiki/Troubleshooting.md#hydraulische-überwachung-warten-oder-gesperrt).
 
 ## Alarmbedienung in der Karte (Etappe C)
 
@@ -453,8 +453,7 @@ Vollständige Schritt-für-Schritt-Anleitung (Kiosk-Benutzer, Formular, Karte, A
 
 Alle Etappen der Kartenübergabe sind umgesetzt: A (Überwachungszustand, ehrliche Anzeige), B (Backend-Vertrag
 mit Gerätekopplung), C (Alarmaktionen in der Karte) und D (Auslieferung mit der Integration). Danach: kompaktes,
-einklappbares Layout mit zwei Spalten und Kopplung an einen Benutzer (Karte 0.5.0), danach Wanddisplay und robuster Start (0.6.x, veröffentlicht mit 2.0.0). Jede Etappe
-wurde von einer unabhängigen Review-Instanz anhand des Codes geprüft. Getestet ist die Karte mit simuliertem
+einklappbares Layout mit zwei Spalten und Kopplung an einen Benutzer (Karte 0.5.0), danach Wanddisplay und robuster Start (0.6.x, veröffentlicht mit 2.0.0). Getestet ist die Karte mit simuliertem
 Home Assistant und der vollständigen Python-Testsuite in der CI; ein Test in einer echten Installation steht
 aus.
 
