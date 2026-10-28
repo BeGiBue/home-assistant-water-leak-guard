@@ -9,9 +9,9 @@
 A backend-focused Home Assistant custom integration for detecting abnormal water consumption and possible water leaks from an existing water-meter flow sensor.
 
 **Current release:** 3.0.1
-**Release status:** published. See the [3.0.1 release notes](RELEASE_NOTES_3.0.1.md).
+**Release status:** published. See the [changelog](CHANGELOG.md).
 **External leak sensors:** supported. The former beta restriction (F04-FSR-H01, damaged persisted
-data of configured external sensors) is fixed in 2.0.0; see [F04-FSR-H01](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/F04_FSR_H01.md).
+data of configured external sensors) is fixed in 2.0.0.
 **Minimum Home Assistant:** 2026.9.0
 **Integration domain:** `water_leak_detection`
 
@@ -21,7 +21,7 @@ data of configured external sensors) is fixed in 2.0.0; see [F04-FSR-H01](https:
 ## Highlights
 
 - Conservative Store recovery and external identity-conflict quarantine preserve
-  alarm/Shutoff contributions. See the [backup recovery and MQTT-boundary guide](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/F04_LOW_ACK_DURATION.md#safety-recovery-and-mqtt-interruption-boundaries).
+  alarm/Shutoff contributions.
 
 - Separate **Slow Leak**, **Low Flow**, **High Flow**, and **Burst Leak** detectors.
 - Independent enable/disable switches for Slow Leak and Low Flow.
@@ -55,7 +55,7 @@ The project is included in the official HACS catalog. Open HACS, search for **Wa
 4. Search for **Water Leak Guard**.
 5. Complete the config flow.
 
-Detailed installation and update instructions: [docs/INSTALLATION.md](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/INSTALLATION.md)
+Detailed installation and update instructions: [Wiki: Installation und Konfiguration](https://github.com/BeGiBue/home-assistant-water-leak-guard/wiki/Installation-und-Konfiguration)
 
 ### Migration from a custom repository
 
@@ -65,7 +65,7 @@ Detailed installation and update instructions: [docs/INSTALLATION.md](https://gi
 4. Refresh HACS (reload repository information if necessary), then check that the existing installation and offered updates are visible.
 5. Keep the existing config entry, entities, automations and `custom:water-leak-guard-card` dashboards. Install updates normally, restart Home Assistant, and fully reload the browser/app.
 
-Version **3.0.0** marks the official HACS catalog admission and this migration. A major version does not automatically mean breaking changes: this update requires no configuration or dashboard conversion. See [SECURITY_REVIEW.md](SECURITY_REVIEW.md) for the review scope and remaining verification.
+Version **3.0.0** marks the official HACS catalog admission and this migration. A major version does not automatically mean breaking changes: this update requires no configuration or dashboard conversion.
 
 ### Manual installation
 
@@ -112,7 +112,7 @@ Steadiness is an additional indication of a tap left open, **not a prerequisite 
 
 Any real report below the Low threshold immediately discards the stability series, including 20–149 L/h and even a short quiet pause. Thus 15 minutes steady, 30 seconds quiet, then 15 minutes steady cannot trigger early activation. The normal Low progress continues under its existing rules until a full quiet reset. A continuous confirmed phase **below 20 L/h for 3 minutes** resets Low monitoring and active Low events (179 seconds does not; 180 seconds does). Existing explicitly saved reset durations, including 7 minutes, remain unchanged.
 
-High-band reports discard Low stability and retain the existing Low/High handover. Unknown, unavailable and invalid values interrupt stability; the returning first report contributes zero evidence. Round7 retains normal confirmed Low progress across same-source outages. Internal ticks supply no evidence. Stability cannot end an already ACTIVE Low event; only its physical quiet/reset condition does. Stability history is transient and is rebuilt after restart; active event persistence is unchanged.
+High-band reports discard Low stability and retain the existing Low/High handover. Unknown, unavailable and invalid values interrupt stability; the returning first report contributes zero evidence. The integration retains normal confirmed Low progress across same-source outages. Internal ticks supply no evidence. Stability cannot end an already ACTIVE Low event; only its physical quiet/reset condition does. Stability history is transient and is rebuilt after restart; active event persistence is unchanged.
 
 Slow Leak and Low Flow can be switched off independently. High Flow can be temporarily bypassed. Burst Leak cannot be bypassed by the High Flow bypass.
 
@@ -235,7 +235,7 @@ Bypass, any ACTIVE alarm (including external sources), Burst/Rapid-Rise candidat
 measurement gaps and interrupted High episodes are excluded. Every startup needs
 the configured physical High quiet reset before new High learning.
 
-See [F04 V3 configuration and safety contract](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/F04_V3.md).
+See [Wiki: F04 V3](https://github.com/BeGiBue/home-assistant-water-leak-guard/wiki/F04-V3) for the configuration and safety contract.
 
 ## Hydraulic context
 
@@ -278,27 +278,14 @@ Event payloads include the event ID and relevant detector context. Burst events 
 
 ## Documentation
 
-- [Installation and updates](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/INSTALLATION.md)
+- [Installation and configuration (Wiki, German)](https://github.com/BeGiBue/home-assistant-water-leak-guard/wiki/Installation-und-Konfiguration)
 - [Configuration reference](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/CONFIGURATION.md)
-- [Troubleshooting](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/TROUBLESHOOTING.md)
+- [Dashboard card](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/CARD.md)
+- [Troubleshooting (Wiki, German)](https://github.com/BeGiBue/home-assistant-water-leak-guard/wiki/Troubleshooting)
 - [Changelog](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/CHANGELOG.md)
-- [v1.0.3 release notes](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/RELEASE_NOTES_1.0.3.md)
-- [Release procedure](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/RELEASING.md)
 - [Project Wiki](https://github.com/BeGiBue/home-assistant-water-leak-guard/wiki)
-- [Technical specification and roadmap](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/SPEC.md)
 
-## Release history
-
-Version 1.0.3 was an earlier stable release. It included the complete original v0.1 → v0.3 backend roadmap plus the independently reviewed technical stabilization through correction round 7:
-
-- **v0.1.0** — detection core and backend entities
-- **v0.2.0** — notifications, device acknowledgement, and geofencing
-- **v0.3.0** — adaptive learning and hydraulic plausibility
-
-The previously published **0.3.0** GitHub release was tagged before the Home Assistant integration-type correction and still declared itself as a `helper`. **1.0.3 continues the corrected stable line introduced with 1.0.0, explicitly declares `integration_type: "service"`, and contains the reviewed safety and reliability corrections released after 1.0.2.**
-
-The release workflow validates the selected commit against Home Assistant 2026.9.4 with compile checks, Ruff, JSON validation, and automated tests. Current review results are recorded in [SECURITY_REVIEW.md](SECURITY_REVIEW.md).
-
+The release workflow validates the selected commit against Home Assistant 2026.9.4 with compile checks, Ruff, JSON validation, and automated tests.
 
 ## License
 
@@ -308,11 +295,11 @@ See [LICENSE](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/ma
 
 ## Operational contract after 1.1.0
 
-Version **1.1.0** contains the seven reviewed technical correction rounds together with
+Version **1.1.0** introduced
 F02 static High Flow, F08 Low Flow stability, and the repeatedly confirmed seasonal
 learning of clean High Flow episodes. High remains static and learning can influence only
 the existing adaptive Burst context in that release. F04 V3 replaces the shared High-learning channel and Rapid-Rise rule;
-see the current [V3 contract](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/F04_V3.md). F04 V3 is part of the stable release 2.0.0.
+see the current [V3 contract](https://github.com/BeGiBue/home-assistant-water-leak-guard/wiki/F04-V3). F04 V3 is part of the stable release 2.0.0.
 
 Only actual flow reports supply detection/quiet evidence. Re-reading a cached HA
 state on an internal tick never matures a timer. Object identity and report
@@ -353,7 +340,7 @@ communication failure between valid endpoints are indistinguishable. A later val
 report can therefore confirm a long interval, but cannot prove continuous physical
 flow between reports. Users of normally frequent sensors can set an expert limit
 when long silence could indicate a frozen source. There is no automatic derivation
-of that limit. Round 1's persisted 30-second default remains unlimited unless
+of that limit. A persisted 30-second default from early versions remains unlimited unless
 explicitly re-saved; other positive legacy limits are preserved.
 
 Optional total-meter progress is compared with accumulated confirmed flow volume,
@@ -393,8 +380,8 @@ Already handed-off calls cannot be recalled. Unload cancels local waiting tasks;
 an interrupted in-flight call is persisted as ambiguous and is not automatically
 resent on the same route after restore, because it may already have pushed.
 A changed notify service is a new route and remains eligible unless acknowledged.
-Accepted and interrupted states are persisted per route. Round 2 interrupted
-records did not contain service provenance: migration retains that unknown route
+Accepted and interrupted states are persisted per route. Interrupted
+records from early versions did not contain service provenance: migration retains that unknown route
 explicitly instead of attaching it to a potentially new configured service. An
 eligible current route may dispatch; if it was also the unrecorded old route, this
 upgrade ambiguity can produce a duplicate. Historical service identity cannot be
@@ -418,7 +405,7 @@ Every form submenu offers **Back without saving**; enable it and submit to retur
 without validating or saving unfinished fields. Own derived Water Leak Guard sensors
 are rejected as sources. Physical valve control remains in user HA automations.
 
-These technical rounds do not establish absence of false alarms during normal use.
+The tests do not establish absence of false alarms during normal use.
 
 ### F02: static High Flow boundary
 
@@ -442,7 +429,7 @@ MQTT Flow sensors need `force_update: true` to expose repeated equal telegrams.
 Short MQTT expiry or explicit source timeout can repeatedly interrupt reset
 evidence. Missing reports never mean zero. Configure now provides an authorized
 active-event acknowledgement form; numeric event seconds gain DE/EN display
-attributes. Full diagnostics, semantics and limits: [follow-up contract](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/F04_LOW_ACK_DURATION.md).
+attributes.
 
 
 ### F04 Sicherheitsreview: MQTT-Messherkunft und Quittierung
@@ -452,7 +439,7 @@ Empfänger-Messzeit im JSON-Feld `timestamp`; `force_update` allein beweist kein
 neue Messung. Retained, alte oder ungebundene Nachrichten liefern keine Evidenz.
 Fehlende Messherkunft sperrt die Auswertung und erzeugt einen Repair-Hinweis;
 bestehende ACTIVE-Alarme bleiben erhalten. Die fremde Discovery wird nicht
-überschrieben. Details und Vertrauensgrenzen: [Low/ACK/Dauer](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/F04_LOW_ACK_DURATION.md).
+überschrieben.
 
 ACK wird erst nach erfolgreicher Persistenz veröffentlicht. Das Configure-ACK ist
 administrative Delegation anhand des ausgewählten Recipients und dessen Home-
@@ -482,5 +469,4 @@ version and restart HA. Software/broker tests and the **user-confirmed physical 
 11 seconds blocked then automatically active, `verified_original_measurement`.
 This observed duration is not guaranteed and does not cover all outage/restart
 scenarios. The integration was not tested on every real device or meter; the card was not verified
-in a real Companion app on iOS/iPadOS. See [test details and limits](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/BETA_1.2.0.md) (historical
-beta notes).
+in a real Companion app on iOS/iPadOS.

@@ -3,7 +3,7 @@
 Runtime safety recovery never resets an alarm by discarding its Store. An ERROR
 repair explains damaged bodies or conflicting external event identities. Preserve
 the file, stop HA and restore a verified complete backup; see the
-[recovery procedure](F04_LOW_ACK_DURATION.md#safety-recovery-and-mqtt-interruption-boundaries).
+recovery procedure in the [Wiki](wiki/Persistenz-und-Betrieb.md).
 `identity_conflict` sources retain alarm/Shutoff and cannot use ambiguous ACK/reset
 actions. MQTT timeout/restart boundaries also reject buffered pre-outage values.
 
@@ -297,7 +297,7 @@ measurement gaps exclude episodes. Every startup requires the full configured
 physical High quiet reset before a new eligible episode. Rolling P95, the default
 30-day window and Confidence remain unchanged for ordinary samples.
 
-See [F04 V3](F04_V3.md) for the schema-2 legacy quarantine, separate threshold
+See [F04 V3](wiki/F04-V3.md) for the schema-2 legacy quarantine, separate threshold
 formula, learning reset/source identity and external sensors.
 
 
@@ -369,7 +369,7 @@ External binary sensors can be added during setup or under Configure → Externa
 leak sensors. Every source has its own Shutoff contribution (default true).
 Recipients have independent `allow_external_reset` (default false) and global ACK
 permissions. External reset always requires the current tracker to be Home.
-See [F04 V3](F04_V3.md) for all lifecycle, restart, nonce, migration, failed-write,
+See [F04 V3](wiki/F04-V3.md) for all lifecycle, restart, nonce, migration, failed-write,
 calibration and separate Rolling/Long-Term threshold rules.
 
 ## Low reset, acknowledgement and duration follow-up
@@ -378,7 +378,7 @@ MQTT Flow sensors need `force_update: true` to expose repeated equal telegrams.
 Short MQTT expiry or explicit source timeout can repeatedly interrupt reset
 evidence. Missing reports never mean zero. Configure now provides an authorized
 active-event acknowledgement form; numeric event seconds gain DE/EN display
-attributes. Full diagnostics, semantics and limits: [follow-up contract](F04_LOW_ACK_DURATION.md).
+attributes.
 
 
 ### F04 Sicherheitsreview: MQTT-Messherkunft und Quittierung
@@ -388,7 +388,7 @@ Empfänger-Messzeit im JSON-Feld `timestamp`; `force_update` allein beweist kein
 neue Messung. Retained, alte oder ungebundene Nachrichten liefern keine Evidenz.
 Fehlende Messherkunft sperrt die Auswertung und erzeugt einen Repair-Hinweis;
 bestehende ACTIVE-Alarme bleiben erhalten. Die fremde Discovery wird nicht
-überschrieben. Details und Vertrauensgrenzen: [Low/ACK/Dauer](F04_LOW_ACK_DURATION.md).
+überschrieben.
 
 Die Startup-Grenze wird am tatsächlichen Setupbeginn erfasst und nach dem Restore
 an die Messherkunft gebunden; eine strengere gespeicherte Grenze bleibt erhalten.
@@ -451,7 +451,7 @@ validation, so read it together with the current sensor state and `reason`.
 The overall status sensor also exposes these underlying diagnostics inside
 `measurement_diagnostics`, including `mqtt_measurement_provenance.admission_since`
 and the configured/effective source timeout. Follow the
-[diagnostic steps](TROUBLESHOOTING.md#hydraulic-monitoring-waiting-or-blocked).
+[diagnostic steps](wiki/Troubleshooting.md#hydraulische-überwachung-warten-oder-gesperrt).
 
 Setup records its actual start before Store I/O. After restore, the MQTT boundary
 is bound once to `max(persisted admission_since, setup start)`. Source-generation
@@ -459,4 +459,4 @@ changes bind a new boundary. Neither first reception nor a validation call moves
 it forward just because of transport latency. Retained, replay, out-of-order,
 future, stale and pre-interruption originals remain rejected. Missing provenance
 never falls back to reception time or Total JSON attributes. The first accepted
-report starts with **zero seconds evidence**. See [beta status](BETA_1.2.0.md).
+report starts with **zero seconds evidence**.

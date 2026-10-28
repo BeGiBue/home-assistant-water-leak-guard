@@ -274,7 +274,7 @@ aktuelle Anzeige und reason prüfen: ein späterer Ausfall kann die Quelle sperr
 Ein blockierter oder quittierter Alarm ist keine physische Entwarnung. ACTIVE und
 Shutoff bleiben nach ihren eigenen Regeln bestehen. Event-IDs für Dauer und
 Benachrichtigungen getrennt prüfen. Bei Repair wegen beschädigter Daten Datei
-bewahren und geprüftes Backup nutzen; nicht löschen. [Vollständiger Diagnosepfad](https://github.com/BeGiBue/home-assistant-water-leak-guard/blob/main/docs/TROUBLESHOOTING.md#hydraulic-monitoring-waiting-or-blocked).
+bewahren und geprüftes Backup nutzen; nicht löschen.
 ## Bestätigter Neustartbefund und Einordnung
 
 Am 14. Oktober 2026 bestätigte der Benutzer nach HA-Neustart mit installierter

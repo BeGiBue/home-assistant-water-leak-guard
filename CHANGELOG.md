@@ -10,11 +10,9 @@
 
 - Aufnahme in den offiziellen HACS-Katalog; die reguläre Installation erfolgt über die HACS-Suche.
 - Migration bestehender Custom Repositories dokumentiert: nur den Eintrag unter „Benutzerdefinierte Repositories“ entfernen, Installation und Konfiguration beibehalten, HACS aktualisieren und prüfen.
-- Security-Review: Dateisystemprüfung beim Start in den Executor verlagert, damit langsame Datenträger den Home-Assistant-Event-Loop nicht blockieren; Regressionstest ergänzt.
+- Dateisystemprüfung beim Start in den Executor verlagert, damit langsame Datenträger den Home-Assistant-Event-Loop nicht blockieren; Regressionstest ergänzt.
 - Versionsangaben von Integration, Paket und mitgelieferter Karte auf 3.0.0 abgestimmt; Validierung bei Pull Requests aktiviert.
 - Die Major-Version dokumentiert die HACS-Aufnahme und bedeutet nicht automatisch Breaking Changes. Bestehende Konfigurationen, Entitäten und Dashboard-Karten bleiben kompatibel.
-
-Geplantes Release, noch nicht veröffentlicht. Prüfumfang und Ergebnisse: [SECURITY_REVIEW.md](SECURITY_REVIEW.md).
 
 ## 2.0.1 — 2026-10-16
 
@@ -27,15 +25,14 @@ Keine Änderungen an der Funktionsweise der Karte oder Integration.
 ## 2.0.0 — 2026-10-15
 
 Stable major release. Summary of the changes since the last stable release 1.1.0 (details in the
-entries below and in the beta sections; user-facing overview in
-[RELEASE_NOTES_2.0.0.md](RELEASE_NOTES_2.0.0.md)):
+entries below and in the beta sections):
 
 - **F04 V3** (from 1.2.0-beta.1): Burst Leak with a base of 3,500 L/h if the expert options were never
   saved (a saved value, including 2,000 L/h stored by 1.1.0, is kept), evidence-based Rapid Rise, separate Rolling and confirmed Long-Term
   learning with legacy-learning quarantine, MQTT measurement provenance and replay protection.
 - **External leak sensors** with persistent per-source lifecycle, generation-bound alarm ledger,
   Home-authorized external reset and identity-conflict quarantine. With the **F04-FSR-H01** fix they
-  are no longer excluded from use ([docs/F04_FSR_H01.md](docs/F04_FSR_H01.md)).
+  are no longer excluded from use.
 - **Hydraulic monitoring status** sensor (active / waiting / blocked) with source diagnostics
   (1.2.0-beta.3).
 - **Dashboard card bundled with the integration** (card 0.6.2): loads without a manual resource,
@@ -44,10 +41,6 @@ entries below and in the beta sections; user-facing overview in
   (2.0.0-beta.1 to beta.3).
 - **Wall display** recipient kind for kiosk displays such as TouchKio (2.0.0-beta.3).
 - Shutoff-request icon follows its state; the integration still never operates a valve.
-
-Beta notes: [1.2.0-beta.1](RELEASE_NOTES_1.2.0-beta.1.md), [1.2.0-beta.3](RELEASE_NOTES_1.2.0-beta.3.md),
-[2.0.0-beta.1](RELEASE_NOTES_2.0.0-beta.1.md), [2.0.0-beta.2](RELEASE_NOTES_2.0.0-beta.2.md),
-[2.0.0-beta.3](RELEASE_NOTES_2.0.0-beta.3.md).
 
 Changes since 2.0.0-beta.3:
 
@@ -81,8 +74,7 @@ Changes since 2.0.0-beta.3:
   after such a rename began as a new installation and silently dropped all stored alarms; now the
   barrier stays until a backup is restored or the copy is deliberately moved aside with HA stopped
   (accepting the loss of the stored state). The repair text explains both. Undamaged installations
-  are unchanged. Details:
-  `docs/F04_FSR_H01.md`.
+  are unchanged.
 - The wall display forms ("Add wall display", editing a display) link to the TouchKio automation
   example in the wiki (`Dashboard-Karte#wanddisplay--touchkio`): the display needs an automation to
   wake up and show the card on an alarm.
@@ -281,7 +273,7 @@ All notable changes to Water Leak Guard are documented here.
 - No new Home Assistant entities or user-facing options are required for the High confirmation gate.
 - Existing configuration and stored learning data remain backward compatible.
 - High remains static; confirmed normal High episodes can influence only the existing adaptive Burst context through the normal confidence and hydraulic safety limits.
-- Final reviewed state: 995 repository tests passed. The independent follow-up review additionally ran 49 external tests and reported no Critical, High, Medium or Low findings.
+- 995 repository tests passed.
 
 ### Still open
 
@@ -314,7 +306,7 @@ All notable changes to Water Leak Guard are documented here.
 
 - Release publication is bound to the exact validated commit and verifies existing tags before accepting or creating a release.
 - Added extensive regression coverage for persistence, evidence timing, outages, notification routing, source changes, restore behavior and release integrity.
-- Final reviewed state: 713 repository tests passed; the independent acceptance review additionally ran 110 external tests and reported 0 Critical, High, Medium or Low findings.
+- 713 repository tests passed.
 
 ### Known documented limits
 
