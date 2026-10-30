@@ -36,6 +36,8 @@ jobs:
         run: node --check custom_components/water_leak_detection/frontend/water-leak-guard-card.js
       - name: Card logic tests (plain Node, no npm packages)
         run: node tests/card/card_logic.test.mjs
+      - name: Card registry tests (plain Node, no npm packages)
+        run: node tests/card/registry.test.mjs
       - name: Compile
         run: python -m compileall -q custom_components tests
       - name: Lint

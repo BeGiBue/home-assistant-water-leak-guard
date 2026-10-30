@@ -32,7 +32,7 @@
  * License: AGPL-3.0-only (same as the integration).
  */
 
-const CARD_VERSION = "3.0.2";
+const CARD_VERSION = "3.0.3";
 const DOMAIN = "water_leak_detection";
 const CARD_TAG = "water-leak-guard-card";
 const EDITOR_TAG = "water-leak-guard-card-editor";
@@ -2108,9 +2108,7 @@ class WaterLeakGuardCardEditor extends HTMLElement {
 /* ------------------------------------------------------------- registration */
 
 const loadedCard = customElements.get(CARD_TAG);
-if (!loadedCard) {
-  customElements.define(CARD_TAG, WaterLeakGuardCard);
-} else if (loadedCard.cardVersion !== CARD_VERSION) {
+if (loadedCard && loadedCard.cardVersion !== CARD_VERSION) {
   // Custom elements cannot be redefined: the first loaded copy wins. The
   // integration loads its own copy; a manual dashboard resource is obsolete.
   console.warn(
@@ -2119,7 +2117,46 @@ if (!loadedCard) {
       `(/local/water-leak-guard-card.js) and reload the browser.`
   );
 }
-if (!customElements.get(EDITOR_TAG)) customElements.define(EDITOR_TAG, WaterLeakGuardCardEditor);
+
+// Keep the elements registered in whichever registry is current. If another card or add-on
+// loads the polyfill @webcomponents/scoped-custom-element-registry, it replaces
+// window.customElements with a new, empty registry, and Home Assistant then reports
+// "Custom element doesn't exist". That can happen long after this file ran, and the Lovelace
+// loader cannot help: re-importing a module that is already loaded does not run it again.
+// So the registration is idempotent and repeated: at once, every 500 ms during startup, then
+// every 10 s, and on load, location-changed and visibility changes. One round looks up two
+// names. The class that is already registered (first loaded copy) is the one carried over.
+(function keepRegistered(definitions) {
+  const ensure = () => {
+    for (const [name, component] of definitions) {
+      try {
+        if (!customElements.get(name)) customElements.define(name, component);
+      } catch (error) {
+        // Name already taken or class rejected: another loader was faster.
+      }
+    }
+  };
+  ensure();
+  let rounds = 0;
+  const later = (delay) => {
+    const timer = setTimeout(() => {
+      ensure();
+      later(rounds++ < 40 ? 500 : 10000);
+    }, delay);
+    if (timer && timer.unref) timer.unref(); // keeps Node-based tests from hanging
+  };
+  later(500);
+  if (typeof window !== "undefined" && window.addEventListener) {
+    window.addEventListener("load", ensure, { once: true });
+    window.addEventListener("location-changed", ensure);
+  }
+  if (typeof document !== "undefined" && document.addEventListener) {
+    document.addEventListener("visibilitychange", ensure);
+  }
+})([
+  [CARD_TAG, loadedCard || WaterLeakGuardCard],
+  [EDITOR_TAG, customElements.get(EDITOR_TAG) || WaterLeakGuardCardEditor],
+]);
 
 window.customCards = window.customCards || [];
 if (!window.customCards.some((c) => c.type === CARD_TAG)) {
