@@ -8,6 +8,8 @@ Files:
 
 - `icon.png` — 256×256
 - `icon@2x.png` — 512×512
+- `logo.png` — 256×256
+- `logo@2x.png` — 512×512
 
 The icon is a guard shield filled with water: the protected household supply.
 It is the static normal-state version of the dashboard card motif.
