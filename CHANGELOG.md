@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.4 — 2026-10-31
+
+- Brand-Bilder für Home Assistant und HACS: `logo.png` und `logo@2x.png` im `brand`-Ordner ergänzt, damit Icon und Logo in der HACS-Liste und in Home Assistant erscheinen.
+
+Keine Änderungen an Erkennung, Konfiguration oder Entitäten.
+
 ## 3.0.3 — 2026-10-30
 
 - Fix: Die Dashboard-Karte bleibt auffindbar, wenn eine andere Karte oder ein Add-on den Polyfill für Custom-Element-Registries lädt. Der Polyfill `@webcomponents/scoped-custom-element-registry` ersetzt `window.customElements` durch eine neue, leere Registry, und Home Assistant meldet „Custom element doesn't exist“. Das kann auch lange nach dem Laden der Karte passieren; der Lovelace-Loader hilft dann nicht, weil ein bereits geladenes Modul beim erneuten Import nicht noch einmal läuft. Die Karte meldet sich und ihren Editor jetzt in der jeweils aktuellen Registry an: sofort, im Start alle 500 ms, danach alle 10 s sowie bei `load`, `location-changed` und Sichtbarkeitswechsel. Ein Durchlauf prüft nur zwei Einträge. Bei einer bereits geladenen älteren Kartenversion bleibt es bei „die zuerst geladene Kopie gewinnt“, die Warnung erscheint weiterhin; nach einem Austausch wird genau diese Klasse nachgemeldet.

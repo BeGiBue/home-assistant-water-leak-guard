@@ -8,7 +8,7 @@
 
 A backend-focused Home Assistant custom integration for detecting abnormal water consumption and possible water leaks from an existing water-meter flow sensor.
 
-**Current release:** 3.0.3
+**Current release:** 3.0.4
 **Release status:** published. See the [changelog](CHANGELOG.md).
 **External leak sensors:** supported. The former beta restriction (F04-FSR-H01, damaged persisted
 data of configured external sensors) is fixed in 2.0.0.
