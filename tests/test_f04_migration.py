@@ -10,6 +10,7 @@ from homeassistant.helpers.storage import Store
 
 from custom_components.water_leak_detection.source_identity import SourceIdentity
 from custom_components.water_leak_detection.storage import RuntimeStore, migrate_snapshot
+from tests.store_helpers import store_writer
 
 NOW = datetime(2026, 10, 11, tzinfo=UTC)
 SOURCE = SourceIdentity("sensor.flow", "registry", "signature", "generation", "epoch")
@@ -88,17 +89,18 @@ async def test_real_atomic_write_failure_never_reports_commit(runtime_hass, monk
     before = Path(old.path).read_bytes()
     store = RuntimeStore(runtime_hass, 2, old.key,
                          lambda data: migrate_snapshot(data, SOURCE, NOW, "entry"))
-    writer = store._write_prepared_data
+    writer_owner, writer_name = store_writer(store)
+    writer = getattr(writer_owner, writer_name)
 
     def fail(*_args):
         from homeassistant.exceptions import HomeAssistantError
         raise HomeAssistantError("injected physical write failure")
 
-    monkeypatch.setattr(store, "_write_prepared_data", fail)
+    monkeypatch.setattr(*store_writer(store), fail)
     with pytest.raises(Exception, match="physical write failure"):
         await store.async_load()
     assert Path(old.path).read_bytes() == before
     assert store.recovered_data == raw
-    monkeypatch.setattr(store, "_write_prepared_data", writer)
+    monkeypatch.setattr(*store_writer(store), writer)
     await store.async_save(migrate_snapshot(deepcopy(raw), SOURCE, NOW, "entry"))
     assert json.loads(Path(old.path).read_text())["data"]["legacy_learning_migration"]

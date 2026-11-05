@@ -32,7 +32,7 @@
  * License: AGPL-3.0-only (same as the integration).
  */
 
-const CARD_VERSION = "3.0.4";
+const CARD_VERSION = "3.0.5";
 const DOMAIN = "water_leak_detection";
 const CARD_TAG = "water-leak-guard-card";
 const EDITOR_TAG = "water-leak-guard-card-editor";
@@ -157,6 +157,7 @@ const I18N = {
       out_of_order_original_message: "MQTT-Nachricht in falscher Reihenfolge",
       pre_startup_measurement: "Messung stammt von vor dem Start",
       unbound_rendered_state: "Zustand ohne zugehörige MQTT-Messung",
+      measurement_field_missing: "Messwert fehlt im MQTT-Telegramm",
       invalid_original_identity: "Ungültige Messkennung",
       replayed_or_out_of_order_measurement: "Wiederholte oder veraltete Messung",
       future_measurement: "Messzeit liegt in der Zukunft",
@@ -347,6 +348,7 @@ const I18N = {
       out_of_order_original_message: "MQTT message out of order",
       pre_startup_measurement: "Measurement predates startup",
       unbound_rendered_state: "State without a matching MQTT measurement",
+      measurement_field_missing: "Measurement missing in MQTT message",
       invalid_original_identity: "Invalid measurement identity",
       replayed_or_out_of_order_measurement: "Replayed or outdated measurement",
       future_measurement: "Measurement time lies in the future",

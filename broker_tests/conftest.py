@@ -8,6 +8,7 @@ from homeassistant.config_entries import ConfigEntries, ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import frame
 
 from custom_components.water_leak_detection.const import CONF_FLOW_ENTITY, DOMAIN
 
@@ -28,7 +29,11 @@ async def runtime_hass(tmp_path, monkeypatch):
         return future
 
     monkeypatch.setattr(hass.loop, "run_in_executor", executor_job)
+    # HA 2026.11 reports boolean setup results through the frame helper.
+    frame.async_setup(hass)
     hass.config_entries = ConfigEntries(hass, {})
+    # HA 2026.11: the entity registry load waits for initialized config entries.
+    await hass.config_entries.async_initialize()
     dr.async_setup(hass)
     await dr.async_load(hass, load_empty=True)
     await er.async_load(hass, load_empty=True)

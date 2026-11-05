@@ -19,6 +19,7 @@ from custom_components.water_leak_detection.const import (
 )
 from custom_components.water_leak_detection.external_leaks import ExternalPhase
 from custom_components.water_leak_detection.manager import WaterLeakManager
+from tests.store_helpers import store_writer
 
 
 async def configured(hass, entry, clock):
@@ -201,7 +202,7 @@ async def test_real_writer_failure_keeps_memory_disk_alarm_and_shutoff(
         raise OSError("injected disk write failure")
 
     with monkeypatch.context() as patch:
-        patch.setattr(manager._store, "_write_prepared_data", fail)
+        patch.setattr(*store_writer(manager._store), fail)
         assert not await manager.async_external_reset(payload)
     assert manager.external.sources["a"].phase is ExternalPhase.ACTIVE
     assert manager.alarm_active and manager.shutoff_request

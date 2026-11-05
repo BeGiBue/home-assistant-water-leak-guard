@@ -118,7 +118,7 @@ class RuntimeStore(Store[dict[str, Any]]):
         async with self._write_lock:
             if self._read_only:
                 raise RuntimeError("Cannot commit a safety state to a read-only Store")
-            self._manager.async_invalidate(self.key)
+            self._invalidate_load_cache()
             self._async_cleanup_delay_listener()
             self._async_cleanup_final_write_listener()
             self._data = None
@@ -130,6 +130,16 @@ class RuntimeStore(Store[dict[str, Any]]):
                     "data": data,
                 }
             )
+
+    def _invalidate_load_cache(self) -> None:
+        """Drop HA's preload cache; its location moved in Home Assistant 2026.11.
+
+        An unknown layout raises, so the caller keeps failing closed.
+        """
+        if (file_io := getattr(self, "_io", None)) is not None:
+            file_io.async_invalidate_cache()
+            return
+        self._manager.async_invalidate(self.key)
 
     async def _async_migrate_func(self, old_major_version, old_minor_version, old_data):
         self.recovered_data = None

@@ -21,6 +21,7 @@ from custom_components.water_leak_detection.long_term_learning import (
     HighEpisode,
     LongTermHighLearner,
 )
+from tests.store_helpers import store_writer
 
 
 async def setup(hass, entry, clock):
@@ -113,7 +114,7 @@ async def test_physical_writer_error_no_release_or_success(
         raise WriteError("independent writer failure")
 
     with monkeypatch.context() as patch:
-        patch.setattr(m._store, "_write_prepared_data", fail)
+        patch.setattr(*store_writer(m._store), fail)
         assert not await m.async_external_reset(action(m))
     assert m.alarm_active and m.shutoff_request
     assert Path(m._store.path).read_bytes() == before

@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.5 — 2026-11-05
+
+- Fix: Unter Home Assistant 2026.11 blieb die hydraulische Überwachung mit „Messherkunft konnte nicht gespeichert werden“ (`provenance_persistence_failed`) gesperrt. Ursache war ein internes Feld von `Store`, das HA entfernt hat. Dadurch schlug jedes Speichern des Laufzeitzustands fehl, auch für Quittierungen. Die Integration läuft jetzt auf 2026.9 bis 2026.11.
+- Sicherheit: Ein MQTT-Telegramm ohne das Feld, das das `value_template` des Durchflusssensors liest, gilt nicht mehr als Messung (`measurement_field_missing`). So kann ein Template, das den vorigen Wert weitergibt, keinen alten Durchfluss als frische Messung ausgeben. Die aktuelle Discovery von wmbusmeters ist davon nicht betroffen.
+- Tests: Die Prüfung läuft jetzt gegen Home Assistant 2026.9.4 und 2026.11.0.
+
+Keine Änderungen an Konfiguration oder Entitäten. Nach dem Update ist ein Neustart von Home Assistant nötig.
+
 ## 3.0.4 — 2026-10-31
 
 - Brand-Bilder für Home Assistant und HACS: `logo.png` und `logo@2x.png` im `brand`-Ordner ergänzt, damit Icon und Logo in der HACS-Liste und in Home Assistant erscheinen.

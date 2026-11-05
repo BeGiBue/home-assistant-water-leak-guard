@@ -8,6 +8,7 @@ back to treating reception/force_update as proof of a physical measurement.
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Mapping
 
 from .validation import parse_datetime
@@ -15,6 +16,14 @@ from .validation import parse_datetime
 MAX_MEASUREMENT_DELIVERY_AGE_SECONDS = 300
 MAX_MEASUREMENT_FUTURE_SKEW_SECONDS = 2
 MAX_PAYLOAD_BYTES = 65536
+_TEMPLATE_FIELD = re.compile(r"\bvalue_json\.([A-Za-z_]\w*)")
+
+
+def _measurement_fields(config: Mapping) -> set[str]:
+    """Return the payload fields the sensor renders; empty when not statically known."""
+    template = config.get("value_template")
+    source = getattr(template, "template", template)
+    return set(_TEMPLATE_FIELD.findall(source)) if isinstance(source, str) else set()
 
 
 class MqttProvenance:
@@ -103,6 +112,12 @@ class MqttProvenance:
                 self.reason = "out_of_order_original_message"
                 return None
         if stamp is None:
+            return None
+        # A template may render the previous state for a telegram without this
+        # field. A new timestamp must not turn that old value into a measurement.
+        fields = _measurement_fields(config)
+        if fields and not fields.intersection(raw):
+            self.reason = "measurement_field_missing"
             return None
         if stamp < self.started_at:
             self.reason = "pre_startup_measurement"

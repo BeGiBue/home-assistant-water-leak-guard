@@ -13,6 +13,7 @@ from test_f04_v2_safety_boundaries import restart
 
 from custom_components.water_leak_detection.external_leaks import ExternalLeakController
 from custom_components.water_leak_detection.storage import validate_snapshot_body
+from tests.store_helpers import store_writer
 
 
 async def retained_alarm(hass, entry, clock):
@@ -108,7 +109,7 @@ async def test_ledger_recovery_blocks_writes_then_verified_backup_retains_alarm(
         raise WriteError("controlled recovery write failure")
 
     with monkeypatch.context() as patch:
-        patch.setattr(manager._store, "_write_prepared_data", fail)
+        patch.setattr(*store_writer(manager._store), fail)
         runtime_hass.states.async_set("binary_sensor.b", "on")
         await runtime_hass.async_block_till_done()
         runtime_hass.states.async_set("binary_sensor.b", "off")
@@ -146,7 +147,7 @@ async def test_authorized_tombstone_reset_failure_then_success_affects_only_exac
         raise WriteError("controlled tombstone reset write failure")
 
     with monkeypatch.context() as patch:
-        patch.setattr(manager._store, "_write_prepared_data", fail)
+        patch.setattr(*store_writer(manager._store), fail)
         assert not await manager.async_external_reset(reset)
         assert manager.external.has_active_sources and manager.shutoff_request
         assert path.read_bytes() == original

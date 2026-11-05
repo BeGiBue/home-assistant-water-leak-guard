@@ -11,6 +11,12 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest supported release and the newest one known to change private
+        # Store and registry internals that this integration depends on.
+        home-assistant: ["2026.9.4", "2026.11.0"]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -22,7 +28,7 @@ jobs:
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "https://github.com/home-assistant/core/archive/refs/tags/2026.9.4.zip"
+          python -m pip install "https://github.com/home-assistant/core/archive/refs/tags/${{ matrix.home-assistant }}.zip"
           # HA scans namespace paths as real directories; avoid editable finder sentinels.
           python -m pip install ".[test]"
           python -m pip install ruff
