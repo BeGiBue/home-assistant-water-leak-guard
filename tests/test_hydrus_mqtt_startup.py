@@ -10,6 +10,7 @@ import pytest
 from homeassistant.components.mqtt.models import ReceiveMessage
 from homeassistant.core import State
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.template import Template
 from test_f04_mqtt_latency import deliver
 from test_hydrus_mqtt_diagnostics import HydrusTransport, running
 
@@ -232,3 +233,52 @@ def test_persisted_future_boundary_is_not_weakened_or_rebound():
     assert unbound.validate(hass, "sensor.flow", state, now) is None
     assert unbound.started_at is None
     assert unbound.reason == "startup_not_initialized"
+
+
+async def test_real_store_commit_admits_source_and_persists_marker(
+    runtime_hass, runtime_entry, measurement_clock
+):
+    """The durable write must work against the running HA's private Store layout."""
+    transport = HydrusTransport(runtime_hass, runtime_entry, measurement_clock, True)
+    manager = await start(runtime_hass, runtime_entry)
+
+    await deliver(transport, measurement_clock, 0.25, 60, 0.1, 0)
+
+    assert manager.source_available
+    assert manager._mqtt_provenance.reason == "verified_original_measurement"
+    stored = json.loads(Path(manager._store.path).read_text())["data"]
+    assert stored["mqtt_measurement_provenance"]["measurement_timestamp"] is not None
+
+
+@pytest.mark.parametrize(
+    ("template", "payload", "reason"),
+    [
+        # The add-on's numeric template, and one rendering the previous state.
+        (
+            '{{ value_json.flow_m3h if value_json.flow_m3h is defined else "" }}',
+            {"flow_m3h": 0.25},
+            "verified_original_measurement",
+        ),
+        (
+            "{{ value_json.flow_m3h if value_json.flow_m3h is defined else this.state }}",
+            {"total_m3": 12.5},
+            "measurement_field_missing",
+        ),
+        # Without a statically readable field the existing rules stay authoritative.
+        ("{{ value_json['flow_m3h'] }}", {"total_m3": 12.5}, "verified_original_measurement"),
+        (None, {"total_m3": 12.5}, "verified_original_measurement"),
+    ],
+)
+def test_telegram_without_rendered_field_is_not_a_measurement(template, payload, reason):
+    now, messages, hass, state = proof_fixture()
+    entity = hass.data["sensor"].get_entity("sensor.flow")
+    if template is not None:
+        entity._config["value_template"] = Template(template, None)
+    proof = MqttProvenance("generation")
+    proof.bind_startup(now - timedelta(seconds=600))
+    messages.append(ReceiveMessage(
+        "hydrus", json.dumps({"timestamp": now.isoformat(), **payload}), 0, False, "hydrus", 0
+    ))
+    result = proof.validate(hass, "sensor.flow", state, now)
+    assert proof.reason == reason
+    assert (result is None) == (reason == "measurement_field_missing")

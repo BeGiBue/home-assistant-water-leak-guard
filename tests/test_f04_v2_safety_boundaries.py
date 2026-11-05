@@ -18,6 +18,7 @@ from custom_components.water_leak_detection.const import DOMAIN
 from custom_components.water_leak_detection.external_leaks import ExternalLeakController
 from custom_components.water_leak_detection.manager import WaterLeakManager
 from custom_components.water_leak_detection.sensor import WaterLeakStatusSensor
+from tests.store_helpers import store_writer
 
 
 async def restart(hass, entry, manager):
@@ -236,7 +237,7 @@ async def test_boundary_write_failure_cannot_admit_quiet_then_clean_retry(
         raise WriteError("controlled exclusion boundary write failure")
 
     with monkeypatch.context() as patch:
-        patch.setattr(manager._store, "_write_prepared_data", fail)
+        patch.setattr(*store_writer(manager._store), fail)
         measurement_clock.advance(400)
         await manager._async_tick(measurement_clock.utcnow())
         for _ in range(4):

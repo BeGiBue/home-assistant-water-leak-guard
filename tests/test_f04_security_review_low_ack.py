@@ -21,6 +21,7 @@ from custom_components.water_leak_detection.sensor import (
     ActiveEventDurationSensor,
     WaterLeakStatusSensor,
 )
+from tests.store_helpers import store_writer
 
 
 async def low(hass, entry, clock, force=True):
@@ -167,7 +168,7 @@ async def test_ack_write_failure_must_not_leave_uncommitted_ack(
         raise WriteError("independent ack write failure")
 
     with monkeypatch.context() as patch:
-        patch.setattr(m._store, "_write_prepared_data", fail)
+        patch.setattr(*store_writer(m._store), fail)
         with pytest.raises(WriteError):
             await m.async_acknowledge_event(event, "phone", "token")
     assert Path(m._store.path).read_bytes() == before

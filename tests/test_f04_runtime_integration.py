@@ -23,6 +23,7 @@ from custom_components.water_leak_detection.const import (
 from custom_components.water_leak_detection.external_leaks import ExternalPhase
 from custom_components.water_leak_detection.manager import WaterLeakManager
 from custom_components.water_leak_detection.repairs import reconcile_legacy_repair
+from tests.store_helpers import store_writer
 
 
 async def test_two_concurrent_reset_actions_only_one_commits(
@@ -403,7 +404,7 @@ async def test_store_failed_options_do_not_publish_shutoff_release(
         raise WriteError("controlled atomic write failure")
 
     with monkeypatch.context() as patch:
-        patch.setattr(manager._store, "_write_prepared_data", fail)
+        patch.setattr(*store_writer(manager._store), fail)
         with pytest.raises(Exception, match="controlled atomic write failure"):
             await manager.async_update_options(proposed)
     assert dict(runtime_entry.options) == options
