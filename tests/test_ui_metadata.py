@@ -90,8 +90,9 @@ def test_setup_and_options_recipient_translations_exist() -> None:
     assert option_steps["init"]["menu_options"]["notifications"]
 
 
-def test_options_flow_reloads_integration_after_changes() -> None:
-    assert issubclass(WaterLeakOptionsFlow, OptionsFlowWithReload)
+def test_options_flow_applies_changes_live_without_reload() -> None:
+    # The entry registers an update listener; HA rejects an automatic reload then.
+    assert not issubclass(WaterLeakOptionsFlow, OptionsFlowWithReload)
 
 
 def test_custom_integration_uses_runtime_translation_files_only() -> None:

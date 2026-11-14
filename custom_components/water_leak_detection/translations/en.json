@@ -753,5 +753,25 @@
       "title": "Safety state requires recovery",
       "description": "The runtime store for {name} is damaged or contains conflicting alarm identities. Alarm and shutoff requests are conservatively retained; affected acknowledgements and resets are blocked. Preserve the original file, stop Home Assistant and restore a verified complete backup. Do not delete the store to clear an alarm. Then verify sources and diagnostics. The integration does not operate a valve. If .storage/water_leak_detection.runtime.ENTRY_ID is missing and a copy …corrupt.TIME lies next to it (Home Assistant set aside invalid JSON), restore a backup with Home Assistant stopped. Without a backup: with Home Assistant stopped, move the .corrupt copy out of .storage; this deliberately gives up the stored state."
     }
+  },
+  "exceptions": {
+    "unknown_config_entry": {
+      "message": "Unknown Water Leak Guard config entry: {entry_id}"
+    },
+    "no_config_entry": {
+      "message": "No Water Leak Guard config entry is loaded."
+    },
+    "config_entry_required": {
+      "message": "Several Water Leak Guard entries are loaded; config_entry_id is required."
+    },
+    "acknowledgement_rejected": {
+      "message": "Acknowledgement rejected: it needs a current recipient, an active event and a device that is Home."
+    },
+    "external_reset_rejected": {
+      "message": "External reset rejected or not saved; alarm and shutoff request stay active."
+    },
+    "external_reset_action_unavailable": {
+      "message": "External reset action unavailable, or the recipient is not authorized at Home."
+    }
   }
 }

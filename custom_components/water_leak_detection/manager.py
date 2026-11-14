@@ -154,6 +154,9 @@ _LOGGER = logging.getLogger(__name__)
 
 Listener = Callable[[], None]
 
+# One warning per interval names the rejected value; repeats stay at debug level.
+INVALID_FLOW_WARNING_INTERVAL_SECONDS = 3600.0
+
 
 def serialized(method):
     """One reentrant writer boundary for controls, measurements and Store writes."""
@@ -219,6 +222,13 @@ class WaterLeakManager:
         self._last_valid_reported_at = None
         self._last_valid_flow_lph: float | None = None
         self._mqtt_report_warning: bool | None = None
+        self._self_applied_options = None
+        self._updating_own_options = False
+        self._invalid_flow_count = 0
+        self._invalid_flow_last_state: str | None = None
+        self._invalid_flow_last_at = None
+        self._invalid_flow_warned_at: float | None = None
+        self._invalid_flow_unreported = 0
         self.bypass_until = None
         self._listeners: set[Listener] = set()
         self._unsubs: list[Callable[[], None]] = []
@@ -438,6 +448,21 @@ class WaterLeakManager:
             self._save_handle = None
         await self._async_save()
 
+    @property
+    def closed(self) -> bool:
+        """Whether this manager was unloaded and no longer accepts commands."""
+        return self._closed
+
+    @property
+    def learning_storage_ready(self) -> bool:
+        """Whether a current snapshot was committed, so learning and resets may act."""
+        return self._migration_ready
+
+    @property
+    def storage_recovery_required(self) -> bool:
+        """Whether the runtime store is unreadable and holds alarm and shutoff."""
+        return self._storage_load_failed
+
     @callback
     def async_add_listener(self, listener: Listener) -> Callable[[], None]:
         """Register an entity update listener."""
@@ -560,6 +585,9 @@ class WaterLeakManager:
             else observed_utc
         )
         await self._check_measurement_identity()
+        # The unlocked tick clears the shared credit for display. Keep this
+        # report's own credit: persistence below awaits and must not lose it.
+        evidence_seconds = self._flow_evidence.credited_seconds
         measurement_interval_seconds = None
         registry = er.async_get(self.hass).async_get(self.flow_entity_id)
         if registry is not None and registry.platform == "mqtt":
@@ -571,7 +599,7 @@ class WaterLeakManager:
                 await self._suspend_source(self._mqtt_provenance.reason)
                 return
             previous_stamp = self._mqtt_provenance.timestamp
-            if previous_stamp is not None and self._flow_evidence.credited_seconds > 0:
+            if previous_stamp is not None and evidence_seconds > 0:
                 physical_seconds = max(0.0, (stamp[0] - previous_stamp).total_seconds())
                 if (
                     self.source_max_age_seconds > 0
@@ -583,6 +611,7 @@ class WaterLeakManager:
                 # Reception intervals remain authoritative for timeout/outage;
                 # their transport jitter must not become an Engine evidence gap.
                 measurement_interval_seconds = physical_seconds
+                evidence_seconds = physical_seconds
                 self._flow_evidence.credited_seconds = physical_seconds
             self._mqtt_provenance.commit(stamp)
             # Persist deduplication before allowing physical evidence to act.
@@ -600,7 +629,7 @@ class WaterLeakManager:
                 flow_state.attributes.get(ATTR_UNIT_OF_MEASUREMENT),
             )
         except (TypeError, ValueError, UnsupportedUnitError) as err:
-            _LOGGER.warning("Unable to normalize flow source %s: %s", self.flow_entity_id, err)
+            self._log_invalid_flow(flow_state, err)
             await self._suspend_source("invalid_flow_measurement")
             return
 
@@ -647,7 +676,7 @@ class WaterLeakManager:
             flow,
             total,
             high_flow_bypassed=bypass_active,
-            evidence_seconds=self._flow_evidence.credited_seconds,
+            evidence_seconds=evidence_seconds,
             measurement_interval_seconds=measurement_interval_seconds,
             total_fresh=total_fresh,
             effective_high_threshold_lph=thresholds.effective_high_lph,
@@ -728,6 +757,32 @@ class WaterLeakManager:
                 self.learner.snapshot(dt_util.utcnow()),
             )
         self._notify_listeners()
+
+    def _log_invalid_flow(self, state: State, err: Exception) -> None:
+        """Name the rejected raw value; warn at most once per interval, never per report."""
+        self._invalid_flow_count += 1
+        self._invalid_flow_unreported += 1
+        self._invalid_flow_last_state = str(state.state)[:64]
+        self._invalid_flow_last_at = dt_util.utcnow()
+        now = monotonic()
+        quiet = (
+            self._invalid_flow_warned_at is not None
+            and now - self._invalid_flow_warned_at < INVALID_FLOW_WARNING_INTERVAL_SECONDS
+        )
+        (_LOGGER.debug if quiet else _LOGGER.warning)(
+            "Unable to normalize flow source %s (state %r, unit %r): %s. "
+            "Hydraulic monitoring is paused until the next valid report; "
+            "%d invalid report(s) since the last warning, %d since start",
+            self.flow_entity_id,
+            self._invalid_flow_last_state,
+            state.attributes.get(ATTR_UNIT_OF_MEASUREMENT),
+            err,
+            self._invalid_flow_unreported,
+            self._invalid_flow_count,
+        )
+        if not quiet:
+            self._invalid_flow_warned_at = now
+            self._invalid_flow_unreported = 0
 
     def _apply_controls(self) -> None:
         if self.high_flow_bypass_active or self.engine.active_events():
@@ -865,7 +920,7 @@ class WaterLeakManager:
 
         options = dict(self.entry.options)
         options[key] = bool(enabled)
-        self.hass.config_entries.async_update_entry(self.entry, options=options)
+        self._update_entry_options(options)
         self.apply_options()
         await self.async_refresh()
 
@@ -874,9 +929,26 @@ class WaterLeakManager:
         """Update the default bypass duration from the Number entity."""
         options = dict(self.entry.options)
         options[CONF_BYPASS_DEFAULT_MIN] = max(1.0, min(float(minutes), 1440.0))
-        self.hass.config_entries.async_update_entry(self.entry, options=options)
+        self._update_entry_options(options)
         self.apply_options()
         self._notify_listeners()
+
+    def _update_entry_options(self, options: dict) -> None:
+        """Store options that this manager applies itself in the same writer.
+
+        The config entry listener would otherwise apply and persist them again.
+        """
+        # HA may start the listener eagerly inside this call, or as a later task.
+        self._updating_own_options = True
+        try:
+            self.hass.config_entries.async_update_entry(self.entry, options=options)
+        finally:
+            self._updating_own_options = False
+        self._self_applied_options = self.entry.options
+
+    def options_applied(self, entry: ConfigEntry) -> bool:
+        """Whether the manager applies or already applied exactly these entry options."""
+        return self._updating_own_options or entry.options is self._self_applied_options
 
     @callback
     def apply_options(self) -> None:
@@ -1235,6 +1307,11 @@ class WaterLeakManager:
             "mqtt_measurement_provenance": self._mqtt_provenance.to_dict() if mqtt else None,
             "mqtt_provenance_status": self._mqtt_provenance.reason if mqtt else "not_mqtt",
             "last_valid_flow_lph": self._last_valid_flow_lph,
+            "invalid_flow_report_count": self._invalid_flow_count,
+            "last_invalid_flow_state": self._invalid_flow_last_state,
+            "last_invalid_flow_at": (
+                self._invalid_flow_last_at.isoformat() if self._invalid_flow_last_at else None
+            ),
             "last_valid_ha_reported_at": (
                 self._last_valid_reported_at.isoformat() if self._last_valid_reported_at else None
             ),
@@ -1534,7 +1611,7 @@ class WaterLeakManager:
         staged = self.external.copy()
         self._configure_external_sources(staged, options)
         await self._commit_external(staged)
-        self.hass.config_entries.async_update_entry(self.entry, options=options)
+        self._update_entry_options(options)
         self._apply_options_now()
         self._rebind_source_listeners()
         await self._save_current_locked()
@@ -1832,9 +1909,7 @@ class WaterLeakManager:
                 for item in raw
             ]
             if updated != raw:
-                self.hass.config_entries.async_update_entry(
-                    self.entry, options={**self.entry.options, CONF_EXTERNAL_SENSORS: updated}
-                )
+                self._update_entry_options({**self.entry.options, CONF_EXTERNAL_SENSORS: updated})
         await self._check_measurement_identity()
         staged = self.external.copy()
         self._configure_external_sources(staged, self.entry.options, forced=True)

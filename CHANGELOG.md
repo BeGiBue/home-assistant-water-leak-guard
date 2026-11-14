@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.1.0 — 2026-11-14
+
+- Fix: Eine MQTT-Messung zählt nicht mehr als Beobachtungslücke, wenn der 10-Sekunden-Takt in ihr Speichern fällt.
+- Log: Die Warnung zu ungültigen Durchflusswerten nennt Rohwert und Einheit und erscheint höchstens einmal pro Stunde.
+- Recorder: Große Diagnose-Attribute werden nicht mehr aufgezeichnet.
+- Optionen: Eigene Änderungen werden nur noch einmal angewendet und gespeichert.
+- Sicherheit: Mobil-Aktionen vergleichen das Empfänger-Token zeitkonstant.
+- Neu: Diagnosedaten zum Herunterladen, Tokens und Namen geschwärzt.
+- Neu: Übersetzte Fehlermeldungen der Dienste.
+- Karte: Rückfragen erscheinen in der Karte statt als Browser-Dialog.
+- Karte: Der Inhalt wird nur bei sichtbaren Änderungen ersetzt, nicht während eines Tastendrucks.
+- Tests: Wöchentlicher Lauf gegen die Home-Assistant-Beta.
+
+Keine Änderungen an Konfiguration oder Entitäten. Nach dem Update ist ein Neustart von Home Assistant nötig.
+
 ## 3.0.5 — 2026-11-05
 
 - Fix: Unter Home Assistant 2026.11 blieb die hydraulische Überwachung mit „Messherkunft konnte nicht gespeichert werden“ (`provenance_persistence_failed`) gesperrt. Ursache war ein internes Feld von `Store`, das HA entfernt hat. Dadurch schlug jedes Speichern des Laufzeitzustands fehl, auch für Quittierungen. Die Integration läuft jetzt auf 2026.9 bis 2026.11.

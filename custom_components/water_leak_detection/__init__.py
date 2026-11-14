@@ -37,20 +37,35 @@ _LEGACY_DEFAULT_TITLES = {
 }
 
 
+def _service_error(key: str, message: str, **placeholders: str) -> HomeAssistantError:
+    """English message for logs and scripts; the UI shows the translated one."""
+    return HomeAssistantError(
+        message,
+        translation_domain=DOMAIN,
+        translation_key=key,
+        translation_placeholders=placeholders or None,
+    )
+
+
 def _manager_for_call(hass: HomeAssistant, call: ServiceCall) -> WaterLeakManager:
     managers: dict[str, WaterLeakManager] = hass.data.get(DOMAIN, {})
     entry_id = call.data.get(ATTR_CONFIG_ENTRY_ID)
     if entry_id:
         manager = managers.get(entry_id)
         if manager is None:
-            raise HomeAssistantError(f"Unknown Water Leak Guard config entry: {entry_id}")
+            raise _service_error(
+                "unknown_config_entry",
+                f"Unknown Water Leak Guard config entry: {entry_id}",
+                entry_id=str(entry_id),
+            )
         return manager
     if len(managers) == 1:
         return next(iter(managers.values()))
     if not managers:
-        raise HomeAssistantError("No Water Leak Guard config entry is loaded")
-    raise HomeAssistantError(
-        "Multiple Water Leak Guard entries are loaded; config_entry_id is required"
+        raise _service_error("no_config_entry", "No Water Leak Guard config entry is loaded")
+    raise _service_error(
+        "config_entry_required",
+        "Multiple Water Leak Guard entries are loaded; config_entry_id is required",
     )
 
 
@@ -76,14 +91,17 @@ async def async_setup(hass: HomeAssistant, _config: dict) -> bool:
         if not await manager.async_acknowledge_event(
             call.data["event_id"], call.data["recipient_id"], call.data["recipient_token"]
         ):
-            raise HomeAssistantError(
-                "Acknowledgement rejected: current recipient, event and Home required"
+            raise _service_error(
+                "acknowledgement_rejected",
+                "Acknowledgement rejected: current recipient, event and Home required",
             )
 
     async def _external_reset(call: ServiceCall) -> None:
         manager = _manager_for_call(hass, call)
         if not await manager.async_external_reset(dict(call.data)):
-            raise HomeAssistantError("External reset rejected or not durably committed")
+            raise _service_error(
+                "external_reset_rejected", "External reset rejected or not durably committed"
+            )
 
     async def _request_external_reset(call: ServiceCall) -> None:
         manager = _manager_for_call(hass, call)
@@ -93,8 +111,9 @@ async def async_setup(hass: HomeAssistant, _config: dict) -> bool:
             call.data.get("source_generation"),
             call.data.get("event_id"),
         ):
-            raise HomeAssistantError(
-                "External reset action unavailable or recipient not Home-authorized"
+            raise _service_error(
+                "external_reset_action_unavailable",
+                "External reset action unavailable or recipient not Home-authorized",
             )
 
     hass.services.async_register(
@@ -212,13 +231,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Apply options live; source changes use the explicit reconfigure reload."""
     manager = hass.data.get(DOMAIN, {}).get(entry.entry_id)
-    if manager is None or manager._closed:
+    if manager is None or manager.closed:
         return
     if manager.flow_entity_id != entry.data.get("flow_entity") or (
         manager.total_entity_id != (entry.data.get("total_entity") or None)
     ):
         return
-    await manager.async_apply_options()
+    if not manager.options_applied(entry):
+        # Options the manager changed itself are already applied and persisted.
+        await manager.async_apply_options()
     await manager.async_refresh()
     await manager.notifications.async_retry_pending()
 

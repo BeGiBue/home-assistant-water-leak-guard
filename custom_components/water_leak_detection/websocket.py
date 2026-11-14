@@ -74,7 +74,7 @@ def _manager(hass: HomeAssistant, msg: dict[str, Any]) -> WaterLeakManager:
         manager = next(iter(managers.values()))
     else:
         manager = None
-    if manager is None or manager._closed:
+    if manager is None or manager.closed:
         raise CommandError(ERR_INSTANCE, "Water Leak Guard instance not found or ambiguous")
     return manager
 

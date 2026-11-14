@@ -268,6 +268,11 @@ class LongTermHighLearner:
                 r.fingerprint for r in records if r.timestamp > now
             )
 
+    @property
+    def high_blocked(self) -> bool:
+        """Whether a startup or outage boundary still blocks a new High episode."""
+        return self._high_blocked
+
     def to_dict(self, *, now: datetime, runtime_now: datetime) -> dict:
         self.observe_clock(now, runtime_now)
         raw = {

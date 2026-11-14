@@ -73,6 +73,8 @@ class HighFlowBypassSwitch(WaterLeakEntity, SwitchEntity):
 
     _attr_translation_key = "high_flow_bypass"
     _attr_icon = "mdi:water-off-outline"
+    # The countdown changes with every write; the remaining-time sensor records it.
+    _unrecorded_attributes = frozenset({"remaining_seconds"})
 
     def __init__(self, manager: WaterLeakManager) -> None:
         super().__init__(manager, "high_flow_bypass")

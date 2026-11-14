@@ -102,9 +102,11 @@ const tag = (h, action) => {
   return h.slice(h.lastIndexOf("<button", i), h.indexOf(">", i));
 };
 const services = (card) => card._hass.calls.filter((c) => c.service);
-let confirmAnswer = true;
-const confirms = [];
-globalThis.confirm = (msg) => { confirms.push(msg); return confirmAnswer; };
+// The card asks inside its own markup; a native dialog must never be used.
+globalThis.confirm = () => { throw new Error("native confirm must not be used"); };
+const asking = (card) => html(card).includes('role="alertdialog"');
+const click = (card, dataset) => card._onClick({ target: target(dataset) });
+const settle = () => new Promise((r) => setTimeout(r, 0));
 
 const tests = [];
 const test = (name, fn) => tests.push([name, fn]);
@@ -333,19 +335,20 @@ test("full monitoring row whenever the pill is not shown", async () => {
 test("disable detection: only during the detector's alarm, only paired and at home", async () => {
   let card = await mount({ alarm: "low_flow" });
   assert.equal(tag(html(card), "disable-detection").includes(" disabled"), false);
-  confirmAnswer = true;
-  confirms.length = 0;
-  card._onClick({ target: target({ action: "disable-detection", kind: "low_flow" }) });
-  await new Promise((r) => setTimeout(r, 0));
-  assert.equal(confirms.length, 1);
+  click(card, { action: "disable-detection", kind: "low_flow" });
+  await settle();
+  assert.ok(asking(card), "asks inside the card");
+  assert.equal(services(card).length, 0, "nothing happens before the confirmation");
+  click(card, { action: "confirm-ok" });
+  await settle();
+  assert.ok(!asking(card));
   assert.deepEqual(services(card), [{ service: "switch.turn_off", data: { entity_id: K.low_flow_detection } }]);
   card.disconnectedCallback();
 
   card = await mount({ alarm: "low_flow", tracker: "not_home", session: { ...HOME, home: false } });
   assert.equal(tag(html(card), "disable-detection").includes(" disabled"), true);
-  confirms.length = 0;
-  card._onClick({ target: target({ action: "disable-detection", kind: "low_flow" }) }); // forced click
-  assert.equal(confirms.length, 0);
+  click(card, { action: "disable-detection", kind: "low_flow" }); // forced click
+  assert.ok(!asking(card));
   assert.equal(services(card).length, 0);
   card.disconnectedCallback();
 
@@ -360,32 +363,131 @@ test("disable detection: only during the detector's alarm, only paired and at ho
 
 test("bypass start during High Flow alarm needs canClear and confirmation", async () => {
   let card = await mount({ alarm: "high_flow", tracker: "not_home", session: { ...HOME, home: false } });
-  confirms.length = 0;
-  card._onClick({ target: target({ action: "bypass-start" }) });
-  await new Promise((r) => setTimeout(r, 0));
-  assert.equal(confirms.length, 0);
+  click(card, { action: "bypass-start" });
+  await settle();
+  assert.ok(!asking(card));
   assert.equal(services(card).length, 0);
   card.disconnectedCallback();
 
   card = await mount({ alarm: "high_flow" });
-  confirmAnswer = false;
-  card._onClick({ target: target({ action: "bypass-start" }) });
-  await new Promise((r) => setTimeout(r, 0));
+  click(card, { action: "bypass-start" });
+  await settle();
+  assert.ok(asking(card));
+  click(card, { action: "confirm-cancel" });
+  await settle();
+  assert.ok(!asking(card), "cancelled");
   assert.equal(services(card).length, 0);
-  confirmAnswer = true;
-  card._onClick({ target: target({ action: "bypass-start" }) });
-  await new Promise((r) => setTimeout(r, 0));
+  click(card, { action: "bypass-start" });
+  click(card, { action: "confirm-ok" });
+  await settle();
   assert.equal(services(card)[0]?.service, "water_leak_detection.start_high_flow_bypass");
   card.disconnectedCallback();
 
   // Without an alarm presets need neither pairing nor confirmation.
   card = await mount({ session: { paired: false } });
-  confirms.length = 0;
-  card._onClick({ target: target({ action: "bypass-start", minutes: "60" }) });
-  await new Promise((r) => setTimeout(r, 0));
-  assert.equal(confirms.length, 0);
+  click(card, { action: "bypass-start", minutes: "60" });
+  await settle();
+  assert.ok(!asking(card));
   assert.equal(services(card)[0]?.data?.duration_minutes, 60);
   card.disconnectedCallback();
+});
+
+test("confirmation re-checks when confirmed: no action once the device left home", async () => {
+  const card = await mount({ alarm: "low_flow" });
+  click(card, { action: "disable-detection", kind: "low_flow" });
+  assert.ok(asking(card));
+  // The tracker leaves home while the question is open.
+  card.hass = hass({ alarm: "low_flow", tracker: "not_home" });
+  click(card, { action: "confirm-ok" });
+  await settle();
+  assert.ok(!asking(card));
+  assert.equal(services(card).length, 0);
+  card.disconnectedCallback();
+});
+
+test("reset learning asks in the card; an unanswered question times out harmlessly", async () => {
+  const card = await mount();
+  click(card, { action: "reset-learning" });
+  assert.ok(asking(card));
+  assert.match(html(card), /data-action="confirm-cancel"[^>]*>Abbrechen</);
+  card._cancelConfirm(); // what the timeout does
+  assert.ok(!asking(card));
+  click(card, { action: "confirm-ok" }); // stale click on a removed button
+  await settle();
+  assert.equal(services(card).length, 0);
+  click(card, { action: "reset-learning" });
+  click(card, { action: "confirm-ok" });
+  await settle();
+  assert.equal(services(card)[0]?.service, "water_leak_detection.reset_learning");
+  card.disconnectedCallback();
+});
+
+/** Count real writes of the card content. */
+function countWrites(card) {
+  let value = card.shadowRoot.innerHTML;
+  const writes = { n: 0 };
+  Object.defineProperty(card.shadowRoot, "innerHTML", {
+    get: () => value,
+    set: (v) => { value = v; writes.n += 1; },
+    configurable: true,
+  });
+  return writes;
+}
+
+test("an update that changes nothing visible does not rewrite the card", async () => {
+  const card = await mount();
+  const writes = countWrites(card);
+  const next = hass();
+  for (const state of Object.values(next.states)) state.last_updated = "y"; // new state objects, same content
+  card.hass = next;
+  assert.equal(writes.n, 0, "same markup: DOM untouched");
+  const changed = hass();
+  changed.states[K.current_flow].state = "250";
+  changed.states[K.current_flow].last_updated = "z";
+  card.hass = changed;
+  assert.equal(writes.n, 1, "visible change: one write");
+  card.disconnectedCallback();
+});
+
+test("content is not replaced while a button is pressed, then caught up", async () => {
+  const card = await mount();
+  const writes = countWrites(card);
+  card._pressUntil = Date.now() + 60000; // pointerdown
+  const changed = hass();
+  changed.states[K.current_flow].state = "250";
+  changed.states[K.current_flow].last_updated = "z";
+  card.hass = changed;
+  assert.equal(writes.n, 0, "held back during the press");
+  card._releasePress(); // pointerup / time limit
+  assert.equal(writes.n, 1);
+  assert.ok(html(card).includes("250"));
+  card.disconnectedCallback();
+});
+
+test("config entry id comes from the device registry, without a request", async () => {
+  const card = new Card();
+  card.setConfig({ type: "custom:water-leak-guard-card", entity: K.status });
+  const h = hass();
+  h.devices = { d: { name: "WLG", config_entries: ["entry-1"], primary_config_entry: "entry-1" } };
+  card.hass = h;
+  assert.deepEqual(await card._serviceData({ a: 1 }), { config_entry_id: "entry-1", a: 1 });
+  assert.ok(!h.calls.some((c) => c.ws.endsWith("entity_registry/get")));
+});
+
+test("a failed entry id lookup is not remembered", async () => {
+  const card = new Card();
+  card.setConfig({ type: "custom:water-leak-guard-card", entity: K.status });
+  const h = hass();
+  let fail = true;
+  const callWS = h.callWS;
+  h.callWS = async (msg) => {
+    if (fail && msg.type.endsWith("entity_registry/get")) throw new Error("not connected");
+    return callWS(msg);
+  };
+  card.hass = h;
+  assert.deepEqual(await card._serviceData(), {});
+  fail = false;
+  assert.deepEqual(await card._serviceData(), { config_entry_id: "e" });
 });
 
 test("more-info guard blocks detector switches always, bypass during High Flow", async () => {

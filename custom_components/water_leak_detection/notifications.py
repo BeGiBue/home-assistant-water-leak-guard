@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
 from functools import wraps
+from secrets import compare_digest
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -877,7 +878,7 @@ class NotificationController:
             return
 
         recipient = self.recipients.get(recipient_id)
-        if recipient is None or recipient.token != token:
+        if recipient is None or not compare_digest(recipient.token.encode(), token.encode()):
             self._fire_rejected(event_id, recipient_id, "invalid_recipient_or_token")
             return
         if recipient.is_display:

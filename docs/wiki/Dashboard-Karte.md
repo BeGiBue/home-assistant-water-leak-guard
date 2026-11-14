@@ -150,7 +150,8 @@ Anmeldung. Beispiel und Warnung: [Anleitung, Schritt 4](Wanddisplay-TouchKio#sch
 Die Karte hat **keine Ein/Aus-Schalter** mehr. Slow Leak und Low Flow lassen sich in der Karte nur im
 Alarmkasten abschalten, solange ihr Alarm läuft („Erkennung abschalten“); bei High Flow bietet der
 Alarmkasten „Bypass starten“. **Beides beendet den laufenden Alarm sofort** samt seinem Beitrag zur
-Absperranforderung, ohne die Ursache zu beheben. Die Karte fragt mit Warnung nach und bietet beides –
+Absperranforderung, ohne die Ursache zu beheben. Die Karte fragt mit Warnung nach (in der Karte selbst,
+nicht als Browser-Dialog; die Frage verfällt nach 30 Sekunden) und bietet beides –
 wie das Zurücksetzen eines externen Lecks – **nur einem gekoppelten Gerät zuhause** an („quittieren von
 überall, Alarm beenden nur von zuhause“). Burst ist nicht abschaltbar und nicht per Bypass zu
 unterdrücken. Ein-/Ausschalten außerhalb eines Alarms geht über die Geräteseite der Integration; die

@@ -49,6 +49,17 @@ class WaterLeakStatusSensor(WaterLeakEntity, SensorEntity):
 
     _attr_translation_key = "status"
     _attr_icon = "mdi:water-alert"
+    # Live diagnostics for the card and automations. They change with every
+    # report (ages, durations) and are large: keep them out of the recorder.
+    _unrecorded_attributes = frozenset(
+        {
+            "hydraulic_detectors",
+            "measurement_diagnostics",
+            "notification_events",
+            "external_sources",
+            "legacy_learning_migration",
+        }
+    )
 
     def __init__(self, manager: WaterLeakManager) -> None:
         super().__init__(manager, "status")
@@ -85,8 +96,8 @@ class WaterLeakStatusSensor(WaterLeakEntity, SensorEntity):
             "external_sources": self.manager.external_diagnostics(),
             "aggregate_alarm_active": self.manager.alarm_active,
             "aggregate_shutoff_request": self.manager.shutoff_request,
-            "learning_storage_ready": self.manager._migration_ready,
-            "storage_recovery_required": self.manager._storage_load_failed,
+            "learning_storage_ready": self.manager.learning_storage_ready,
+            "storage_recovery_required": self.manager.storage_recovery_required,
             "measurement_source_generation": self.manager.measurement_source.generation,
             "learning_epoch": self.manager.measurement_source.learning_epoch,
             "legacy_learning_migration": self.manager.legacy_learning_migration,
@@ -127,6 +138,7 @@ class HydraulicMonitoringStatusSensor(WaterLeakEntity, SensorEntity):
     _attr_options = ["active", "waiting_for_measurement", "blocked"]
     _attr_icon = "mdi:water-check"
     _attr_should_poll = False
+    _unrecorded_attributes = frozenset({"observation_age_seconds"})
 
     def __init__(self, manager: WaterLeakManager) -> None:
         super().__init__(manager, "hydraulic_monitoring_status")
@@ -420,7 +432,7 @@ class LongTermMaximumFlowSensor(WaterLeakEntity, SensorEntity):
         return {
             "pending_count": len(learner.pending_high_candidates),
             "confirmed_history_count": len(learner.confirmed_high_history),
-            "startup_guard_blocked": learner._high_blocked,
+            "startup_guard_blocked": learner.high_blocked,
             "source_generation": learner.source_generation,
             "learning_epoch": learner.learning_epoch,
             "non_expiring": True,

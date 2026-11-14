@@ -13,7 +13,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlowWithReload,
+    OptionsFlow,
 )
 from homeassistant.const import ATTR_UNIT_OF_MEASUREMENT
 from homeassistant.core import callback
@@ -740,13 +740,18 @@ class WaterLeakConfigFlow(_NavigationForms, ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(
         config_entry: ConfigEntry,
-    ) -> OptionsFlowWithReload:
+    ) -> OptionsFlow:
         """Create options flow."""
         return WaterLeakOptionsFlow()
 
 
-class WaterLeakOptionsFlow(_NavigationForms, OptionsFlowWithReload):
-    """Options for detector settings and Companion recipients."""
+class WaterLeakOptionsFlow(_NavigationForms, OptionsFlow):
+    """Options for detector settings and Companion recipients.
+
+    Every step saves at once and the manager applies it live; the flow never
+    finishes with a new options set, so there is no reload. Home Assistant also
+    rejects an automatic reload for entries that register an update listener.
+    """
 
     _form_parents = {
         "sources": "init",
@@ -2051,7 +2056,7 @@ class WaterLeakOptionsFlow(_NavigationForms, OptionsFlowWithReload):
     async def _persist_options(self, updated: dict[str, Any]) -> None:
         """Save options immediately while keeping the Configure flow open."""
         manager = self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
-        if manager is not None and not manager._closed:
+        if manager is not None and not manager.closed:
             await manager.async_update_options(updated)
         else:
             self.hass.config_entries.async_update_entry(self.config_entry, options=updated)

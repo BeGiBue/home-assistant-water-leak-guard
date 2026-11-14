@@ -32,7 +32,7 @@
  * License: AGPL-3.0-only (same as the integration).
  */
 
-const CARD_VERSION = "3.0.5";
+const CARD_VERSION = "3.1.0";
 const DOMAIN = "water_leak_detection";
 const CARD_TAG = "water-leak-guard-card";
 const EDITOR_TAG = "water-leak-guard-card-editor";
@@ -60,6 +60,10 @@ const ERROR_CODES = [
 ];
 const SESSION_MIN_INTERVAL_MS = 5000;
 const SESSION_ALARM_INTERVAL_MS = 60000;
+/** While a button is pressed the content is not replaced (else its click is lost). */
+const PRESS_HOLD_MS = 700;
+/** An unanswered in-card confirmation disappears after this time. */
+const CONFIRM_TIMEOUT_MS = 30000;
 
 const MONITORING_STATES = ["active", "waiting_for_measurement", "blocked"];
 
@@ -219,6 +223,8 @@ const I18N = {
     storage_paused_hint: "Laufzeitspeicher beschädigt – der Zustand der Erkennung ist nicht gesichert.",
     external_offline_banner: "Ein externer Lecksensor ist nicht erreichbar. Ein Leck an dieser Stelle würde nicht erkannt.",
     action_failed: "Aktion abgelehnt: {msg}",
+    confirm_ok: "Bestätigen",
+    confirm_cancel: "Abbrechen",
     integration_unavailable: "Die Integration liefert keinen Status. Die Anzeige ist nicht aktuell.",
     sensor_unavailable: "Nicht verfügbar",
     flow: "Durchfluss",
@@ -410,6 +416,8 @@ const I18N = {
     storage_paused_hint: "Runtime store damaged – the detection state is not reliable.",
     external_offline_banner: "An external leak sensor is unreachable. A leak at that spot would not be detected.",
     action_failed: "Action rejected: {msg}",
+    confirm_ok: "Confirm",
+    confirm_cancel: "Cancel",
     integration_unavailable: "The integration reports no status. The display is not current.",
     sensor_unavailable: "Unavailable",
     flow: "Flow",
@@ -587,6 +595,33 @@ function navigate(path) {
   window.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: false } }));
 }
 
+/**
+ * One stylesheet for all card instances, parsed once. `null` where constructable
+ * stylesheets are missing (older WebViews): the card then inlines a <style> tag.
+ */
+let sharedSheet;
+function styleSheet() {
+  if (sharedSheet === undefined) {
+    try {
+      sharedSheet = new CSSStyleSheet();
+      sharedSheet.replaceSync(STYLES);
+    } catch (_) {
+      sharedSheet = null;
+    }
+  }
+  return sharedSheet;
+}
+
+/** Config entry of the device that owns the status sensor, from the frontend's device registry. */
+function deviceEntryId(hass, statusEntityId) {
+  const deviceId = hass?.entities?.[statusEntityId]?.device_id;
+  const device = deviceId ? hass?.devices?.[deviceId] : undefined;
+  if (!device) return undefined;
+  if (typeof device.primary_config_entry === "string" && device.primary_config_entry) return device.primary_config_entry;
+  const entries = Array.isArray(device.config_entries) ? device.config_entries : [];
+  return entries.length === 1 && typeof entries[0] === "string" ? entries[0] : undefined;
+}
+
 /* --------------------------------------------------------------------- card */
 
 class WaterLeakGuardCard extends HTMLElement {
@@ -613,7 +648,39 @@ class WaterLeakGuardCard extends HTMLElement {
       // A burst of visibility events needs one answer, not a deferred second one.
       if (document.visibilityState === "visible") this._requestSession({ defer: false });
     };
-    this.shadowRoot.addEventListener("click", (ev) => this._onClick(ev));
+    // Pending in-card confirmation of an action that ends an alarm or deletes data.
+    this._confirm = undefined;
+    this._confirmTimer = undefined;
+    // Last painted markup, and markup held back while a button is pressed.
+    this._painted = undefined;
+    this._pendingHtml = undefined;
+    this._pressUntil = 0;
+    this._pressTimer = undefined;
+    this._adoptedStyles = false;
+    const sheet = styleSheet();
+    if (sheet) {
+      try {
+        this.shadowRoot.adoptedStyleSheets = [sheet];
+        this._adoptedStyles = true;
+      } catch (_) {
+        /* inline <style> instead */
+      }
+    }
+    this.shadowRoot.addEventListener("pointerdown", () => {
+      this._pressUntil = Date.now() + PRESS_HOLD_MS;
+    });
+    const released = () => setTimeout(() => this._releasePress(), 0); // after the click event
+    this.shadowRoot.addEventListener("pointerup", released);
+    this.shadowRoot.addEventListener("pointercancel", released);
+    this.shadowRoot.addEventListener("click", (ev) => {
+      this._pressUntil = 0; // the click arrived: its own render may paint at once
+      this._onClick(ev);
+    });
+  }
+
+  /** Inline styles only where the shared stylesheet could not be adopted. */
+  get _styleTag() {
+    return this._adoptedStyles ? "" : `<style>${STYLES}</style>`;
   }
 
   connectedCallback() {
@@ -639,6 +706,12 @@ class WaterLeakGuardCard extends HTMLElement {
     document.removeEventListener("visibilitychange", this._onVisibility);
     clearInterval(this._sessionInterval);
     clearTimeout(this._sessionTimer);
+    clearTimeout(this._pressTimer);
+    clearTimeout(this._confirmTimer);
+    this._pressTimer = undefined;
+    this._confirmTimer = undefined;
+    this._confirm = undefined;
+    this._pressUntil = 0;
     this._sessionInterval = undefined;
     this._sessionTimer = undefined;
     this._sessionSeq += 1; // answers still in flight are ignored
@@ -669,6 +742,7 @@ class WaterLeakGuardCard extends HTMLElement {
       this._sessionSeq += 1;
       this._sessionLastAt = -Infinity;
       this._trackerSig = undefined;
+      this._cancelConfirm({ render: false }); // it belonged to the other instance
       this._config = { ...DEFAULT_CONFIG, ...config };
       if (this.isConnected) this._requestSession({ defer: false });
     }
@@ -767,10 +841,10 @@ class WaterLeakGuardCard extends HTMLElement {
     } catch (_) {
       /* nothing readable: no alarm line */
     }
-    this.shadowRoot.innerHTML = `<style>${STYLES}</style>
+    this._setHtml(`${this._styleTag}
       <ha-card><div class="empty">${esc(t("loading"))}</div>${
         alarm ? `<div class="fallback-alarm" role="alert">${esc(t("fallback_alarm"))}</div>` : ""
-      }</ha-card>`;
+      }</ha-card>`);
   }
 
   /** The paired recipient's tracker, named by the session (refresh trigger and UI hint only). */
@@ -853,12 +927,23 @@ class WaterLeakGuardCard extends HTMLElement {
   }
 
   async _entryId(statusEntity) {
-    if (this._configEntryId !== undefined) return this._configEntryId;
+    if (this._configEntryId) return this._configEntryId;
+    // The device belongs to exactly this instance: no request needed.
+    const known = deviceEntryId(this._hass, statusEntity);
+    if (known) return (this._configEntryId = known);
     if (!this._configEntryLookup) {
-      this._configEntryLookup = this._hass
+      // Older frontends without that device data. A failed or empty answer is
+      // not remembered: the next command asks again.
+      const lookup = this._hass
         .callWS({ type: "config/entity_registry/get", entity_id: statusEntity })
-        .then((entry) => (this._configEntryId = entry?.config_entry_id || null))
-        .catch(() => (this._configEntryId = null));
+        .then((entry) => entry?.config_entry_id || null)
+        .catch(() => null)
+        .then((id) => {
+          if (this._configEntryLookup === lookup) this._configEntryLookup = undefined;
+          if (id) this._configEntryId = id;
+          return id;
+        });
+      this._configEntryLookup = lookup;
     }
     return this._configEntryLookup;
   }
@@ -1028,6 +1113,16 @@ class WaterLeakGuardCard extends HTMLElement {
       case "open-integration":
         navigate(INTERFACE.integrationPath);
         break;
+      case "confirm-cancel":
+        this._cancelConfirm();
+        break;
+      case "confirm-ok": {
+        const pending = this._confirm;
+        this._cancelConfirm({ render: false });
+        if (pending) pending.run();
+        else this._render();
+        break;
+      }
       case "toggle-section": {
         const key = target.dataset.section;
         if (!(key in this._expanded)) return;
@@ -1042,31 +1137,43 @@ class WaterLeakGuardCard extends HTMLElement {
         if (kind !== "slow_leak" && kind !== "low_flow") return;
         const map = resolveEntities(this._hass, this._statusEntity);
         const entityId = map[`${kind}_detection`];
-        if (!entityId || this._hass?.states?.[entityId]?.state !== "on") return;
-        if (this._detectorPhase(kind) !== "active" || !this._perm.canClear) return;
+        const allowed = () =>
+          this._hass?.states?.[entityId]?.state === "on" &&
+          this._detectorPhase(kind) === "active" &&
+          this._perm.canClear;
+        if (!entityId || !allowed()) return;
         // Switching off ends this detector's ACTIVE alarm at once (backend:
-        // apply_controls -> IDLE). Ask first.
-        if (!window.confirm(t("confirm_disable", { kind: t(`detector.${kind}`) }))) return;
-        this._run(`toggle:${entityId}`, () =>
-          this._hass.callService("switch", "turn_off", { entity_id: entityId })
-        );
+        // apply_controls -> IDLE). Ask first; re-check when confirmed.
+        this._ask(t("confirm_disable", { kind: t(`detector.${kind}`) }), () => {
+          if (!allowed()) return this._render();
+          this._run(`toggle:${entityId}`, () =>
+            this._hass.callService("switch", "turn_off", { entity_id: entityId })
+          );
+        });
         break;
       }
       case "bypass-start": {
         const minutes = num(target.dataset.minutes);
         // Starting the bypass ends an ACTIVE High Flow alarm at once: only a
         // device that may end alarms, and only after confirmation.
+        const start = () =>
+          this._run("bypass", async () =>
+            this._hass.callService(
+              DOMAIN,
+              "start_high_flow_bypass",
+              await this._serviceData(minutes ? { duration_minutes: minutes } : {})
+            )
+          );
         if (this._detectorPhase("high_flow") === "active") {
           if (!this._perm.canClear) return;
-          if (!window.confirm(t("confirm_bypass"))) return;
+          this._ask(t("confirm_bypass"), () => {
+            // Still an alarm: still only for a device that may end alarms.
+            if (this._detectorPhase("high_flow") === "active" && !this._perm.canClear) return this._render();
+            start();
+          });
+          break;
         }
-        this._run("bypass", async () =>
-          this._hass.callService(
-            DOMAIN,
-            "start_high_flow_bypass",
-            await this._serviceData(minutes ? { duration_minutes: minutes } : {})
-          )
-        );
+        start();
         break;
       }
       case "bypass-stop":
@@ -1075,9 +1182,10 @@ class WaterLeakGuardCard extends HTMLElement {
         );
         break;
       case "reset-learning":
-        if (!window.confirm(t("reset_learning_confirm"))) return;
-        this._run("learning", async () =>
-          this._hass.callService(DOMAIN, "reset_learning", await this._serviceData())
+        this._ask(t("reset_learning_confirm"), () =>
+          this._run("learning", async () =>
+            this._hass.callService(DOMAIN, "reset_learning", await this._serviceData())
+          )
         );
         break;
       case "mute": {
@@ -1102,8 +1210,9 @@ class WaterLeakGuardCard extends HTMLElement {
         };
         if (!payload.event_id || !payload.source_id || !payload.source_generation) return;
         // Ends the external alarm and its shutoff contribution: ask first.
-        if (!window.confirm(t("external_reset_confirm", { name: target.dataset.name || payload.source_id }))) return;
-        this._command(`reset:${payload.event_id}`, INTERFACE.externalReset, payload, "external_reset");
+        this._ask(t("external_reset_confirm", { name: target.dataset.name || payload.source_id }), () =>
+          this._command(`reset:${payload.event_id}`, INTERFACE.externalReset, payload, "external_reset")
+        );
         break;
       }
       default:
@@ -1116,21 +1225,21 @@ class WaterLeakGuardCard extends HTMLElement {
   _renderCard() {
     if (!this.shadowRoot) return;
     if (!this._config || !this._hass) {
-      this.shadowRoot.innerHTML = "";
+      this._setHtml("");
       return;
     }
     const t = translator(this._hass);
     if (!this._hass.states) {
       // Precaution: no states yet (HA normally renders panels only with states).
-      this.shadowRoot.innerHTML = `<style>${STYLES}</style><ha-card><div class="empty">${esc(t("loading"))}</div></ha-card>`;
+      this._setHtml(`${this._styleTag}<ha-card><div class="empty">${esc(t("loading"))}</div></ha-card>`);
       return;
     }
     const map = resolveEntities(this._hass, this._statusEntity);
     const status = this._state(map, "status");
 
     if (!status) {
-      this.shadowRoot.innerHTML = `<style>${STYLES}</style>
-        <ha-card><div class="empty">${esc(t("not_found"))}</div></ha-card>`;
+      this._setHtml(`${this._styleTag}
+        <ha-card><div class="empty">${esc(t("not_found"))}</div></ha-card>`);
       return;
     }
 
@@ -1164,10 +1273,10 @@ class WaterLeakGuardCard extends HTMLElement {
     const headerPill = !this._config.show_flow && compactMonitoring ? this._monitoringPill(t) : "";
     const header = this._renderHeader(t, status, tone, alarm, shutoff, monitoring, statusUnavailable, extOffline, headerPill);
     if (statusUnavailable) {
-      this.shadowRoot.innerHTML = `<style>${STYLES}</style>
+      this._setHtml(`${this._styleTag}
         <ha-card class="tone-${tone}">${header}
           <div class="banner banner-warn"><ha-icon icon="mdi:alert-circle-outline"></ha-icon><span>${esc(t("integration_unavailable"))}</span></div>
-        </ha-card>`;
+        </ha-card>`);
       return;
     }
 
@@ -1190,21 +1299,84 @@ class WaterLeakGuardCard extends HTMLElement {
       this._config.show_learning ? this._renderLearning(t, map) : "",
     ].join("");
 
-    this._paint(`<style>${STYLES}</style>
-      <ha-card class="tone-${tone}"><div class="wlg" lang="${lang(this._hass)}">
+    this._setHtml(`${this._styleTag}
+      <ha-card class="tone-${tone}">${this._renderConfirm(t)}<div class="wlg" lang="${lang(this._hass)}">
         <div class="col col-main">${main.join("")}</div>
         ${side.trim() ? `<div class="col col-side">${side}</div>` : ""}
       </div></ha-card>`);
   }
 
-  /** Replace the card content and keep keyboard focus on the same control. */
-  _paint(html) {
+  /**
+   * The only writer of the card content. Unchanged markup is not written again
+   * (state updates that change nothing visible keep the DOM, hover and running
+   * animations). While a button is pressed the new markup waits, at most
+   * PRESS_HOLD_MS: replacing the pressed button would swallow its click.
+   * Keyboard focus stays on the same control.
+   */
+  _setHtml(html) {
+    if (this._pressUntil > Date.now()) {
+      this._pendingHtml = html;
+      if (!this._pressTimer) this._pressTimer = setTimeout(() => this._releasePress(), PRESS_HOLD_MS);
+      return;
+    }
+    this._pendingHtml = undefined;
+    if (html === this._painted) return;
+    this._painted = html;
     const focused = this.shadowRoot.activeElement?.dataset?.focus;
     this.shadowRoot.innerHTML = html;
     if (focused) {
       const again = [...this.shadowRoot.querySelectorAll("[data-focus]")].find((el) => el.dataset.focus === focused);
       if (again && !again.hasAttribute("disabled")) again.focus();
     }
+  }
+
+  /** End of a press (or its time limit): paint what was held back. */
+  _releasePress() {
+    clearTimeout(this._pressTimer);
+    this._pressTimer = undefined;
+    this._pressUntil = 0;
+    const html = this._pendingHtml;
+    this._pendingHtml = undefined;
+    if (html !== undefined && this.shadowRoot) this._setHtml(html);
+  }
+
+  /* --------------------------------------------------------- confirmation */
+
+  /**
+   * Ask inside the card before an action that ends an alarm or deletes data.
+   * Native dialogs (window.confirm) are suppressed or unusable in several
+   * kiosk browsers and app WebViews, which made these actions impossible there.
+   * `run` re-checks its own conditions; the backend decides in any case.
+   */
+  _ask(text, run) {
+    clearTimeout(this._confirmTimer);
+    this._confirm = { text, run };
+    this._confirmTimer = setTimeout(() => this._cancelConfirm(), CONFIRM_TIMEOUT_MS);
+    if (this._confirmTimer && this._confirmTimer.unref) this._confirmTimer.unref();
+    this._render();
+    // Safe default for keyboard and screen reader users: focus "Cancel".
+    const cancel = [...this.shadowRoot.querySelectorAll("[data-focus]")].find((el) => el.dataset.focus === "confirm-cancel");
+    if (cancel) cancel.focus();
+  }
+
+  _cancelConfirm({ render = true } = {}) {
+    clearTimeout(this._confirmTimer);
+    this._confirmTimer = undefined;
+    if (!this._confirm) return;
+    this._confirm = undefined;
+    if (render) this._render();
+  }
+
+  _renderConfirm(t) {
+    if (!this._confirm) return "";
+    return `
+      <div class="confirm" role="alertdialog" aria-labelledby="wlg-confirm-text">
+        <div class="confirm-text" id="wlg-confirm-text">${esc(this._confirm.text)}</div>
+        <div class="actions end">
+          <button class="btn btn-ghost" data-action="confirm-cancel" data-focus="confirm-cancel">${esc(t("confirm_cancel"))}</button>
+          <button class="btn btn-danger" data-action="confirm-ok" data-focus="confirm-ok">${esc(t("confirm_ok"))}</button>
+        </div>
+      </div>`;
   }
 
   /**
@@ -1999,6 +2171,14 @@ const STYLES = `
   .sum-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
   .sec-body { padding: 2px 0 6px; }
 
+  /* In-card confirmation: stays in view while the card scrolls underneath. */
+  .confirm {
+    position: sticky; top: 8px; z-index: 3; margin: 12px 16px 0; padding: 12px 14px;
+    border-radius: 12px; border: 1px solid color-mix(in srgb, var(--wlg-alarm) 45%, transparent);
+    background: var(--ha-card-background, var(--card-background-color, #fff));
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .18);
+  }
+  .confirm-text { white-space: pre-line; line-height: 1.45; margin-bottom: 8px; }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 6px; }
   .actions.end { justify-content: flex-end; }
   .btn {
