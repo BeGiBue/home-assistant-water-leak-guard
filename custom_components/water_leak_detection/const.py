@@ -8,7 +8,7 @@ from homeassistant.const import Platform
 
 DOMAIN = "water_leak_detection"
 NAME = "Water Leak Guard"
-VERSION = "3.1.0"
+VERSION = "3.1.1"
 
 PLATFORMS: tuple[Platform, ...] = (
     Platform.SENSOR,

@@ -434,6 +434,39 @@ function countWrites(card) {
   return writes;
 }
 
+test("a repaint keeps the <ha-card> element and replaces only its content", async () => {
+  const card = await mount();
+  const writes = countWrites(card);
+  // Stand-ins for the painted <ha-card> and for a <template> that parses the new markup.
+  const haCard = { className: "old", kids: ["old"], set textContent(_) { this.kids = []; }, append(...n) { this.kids.push(...n); } };
+  card.shadowRoot.querySelector = (sel) => (sel === "ha-card" ? haCard : null);
+  const createElement = document.createElement;
+  document.createElement = (name) => {
+    if (name !== "template") return createElement(name);
+    return {
+      set innerHTML(v) {
+        const m = /<ha-card(?: class="([^"]*)")?>([\s\S]*)<\/ha-card>/.exec(v);
+        this.content = { querySelector: () => (m ? { className: m[1] || "", childNodes: [m[2]] } : null) };
+      },
+    };
+  };
+  try {
+    const changed = hass({ alarm: "high_flow" });
+    card.hass = changed;
+    assert.equal(writes.n, 0, "the shadow root is not rewritten: <ha-card> stays");
+    assert.match(haCard.className, /^tone-/);
+    assert.equal(haCard.kids.length, 1);
+    assert.match(haCard.kids[0], /class="wlg"/);
+    // No <ha-card> in the new markup (card hidden): the whole content is replaced.
+    card._painted = undefined;
+    card._setHtml("");
+    assert.equal(writes.n, 1);
+  } finally {
+    document.createElement = createElement;
+  }
+  card.disconnectedCallback();
+});
+
 test("an update that changes nothing visible does not rewrite the card", async () => {
   const card = await mount();
   const writes = countWrites(card);

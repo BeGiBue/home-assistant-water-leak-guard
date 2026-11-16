@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.1.1 — 2026-11-16
+
+- Fix Karte: Das Dashboard springt nicht mehr nach oben, wenn „High-Flow-Bypass“ oder „Lernmodell“ auf- oder zugeklappt wird oder ein neuer Messwert erscheint. Die Karte behält jetzt ihr `ha-card`-Element und tauscht nur dessen Inhalt; vorher war die Karte bei jedem Neuzeichnen kurz leer, die Seite wurde kürzer und rutschte nach oben.
+- Karte: Der Tastaturfokus bleibt nach dem Neuzeichnen wieder auf dem Bedienelement, ohne die Seite zu verschieben.
+
+Keine Änderungen an Konfiguration oder Entitäten. Nach dem Update ist ein Neustart von Home Assistant nötig; der Browser bzw. die App lädt die Karte danach neu.
+
 ## 3.1.0 — 2026-11-14
 
 - Fix: Eine MQTT-Messung zählt nicht mehr als Beobachtungslücke, wenn der 10-Sekunden-Takt in ihr Speichern fällt.

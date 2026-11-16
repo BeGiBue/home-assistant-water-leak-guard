@@ -32,7 +32,7 @@
  * License: AGPL-3.0-only (same as the integration).
  */
 
-const CARD_VERSION = "3.1.0";
+const CARD_VERSION = "3.1.1";
 const DOMAIN = "water_leak_detection";
 const CARD_TAG = "water-leak-guard-card";
 const EDITOR_TAG = "water-leak-guard-card-editor";
@@ -1311,7 +1311,7 @@ class WaterLeakGuardCard extends HTMLElement {
    * (state updates that change nothing visible keep the DOM, hover and running
    * animations). While a button is pressed the new markup waits, at most
    * PRESS_HOLD_MS: replacing the pressed button would swallow its click.
-   * Keyboard focus stays on the same control.
+   * Keyboard focus stays on the same control, without scrolling the page.
    */
   _setHtml(html) {
     if (this._pressUntil > Date.now()) {
@@ -1323,11 +1323,36 @@ class WaterLeakGuardCard extends HTMLElement {
     if (html === this._painted) return;
     this._painted = html;
     const focused = this.shadowRoot.activeElement?.dataset?.focus;
-    this.shadowRoot.innerHTML = html;
+    this._swap(html);
     if (focused) {
       const again = [...this.shadowRoot.querySelectorAll("[data-focus]")].find((el) => el.dataset.focus === focused);
-      if (again && !again.hasAttribute("disabled")) again.focus();
+      if (again && !again.hasAttribute("disabled")) again.focus({ preventScroll: true });
     }
+  }
+
+  /**
+   * Put the markup into the card, keeping an existing <ha-card> element and
+   * replacing only its class and content. A new <ha-card> shows nothing until
+   * its own first render one microtask later; a layout in between (restoring
+   * the focus, another card measuring itself) sees a card of height zero, the
+   * page gets shorter and the dashboard scrolls up.
+   */
+  _swap(html) {
+    const root = this.shadowRoot;
+    const card = typeof root.querySelector === "function" ? root.querySelector("ha-card") : null;
+    let next = null;
+    if (card) {
+      const template = document.createElement("template");
+      template.innerHTML = html;
+      next = template.content?.querySelector("ha-card") || null;
+    }
+    if (!next) {
+      root.innerHTML = html; // first paint, or the card is hidden
+      return;
+    }
+    card.className = next.className;
+    card.textContent = "";
+    card.append(...next.childNodes);
   }
 
   /** End of a press (or its time limit): paint what was held back. */
