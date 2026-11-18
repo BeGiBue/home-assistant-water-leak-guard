@@ -32,7 +32,7 @@
  * License: AGPL-3.0-only (same as the integration).
  */
 
-const CARD_VERSION = "3.1.1";
+const CARD_VERSION = "3.1.2";
 const DOMAIN = "water_leak_detection";
 const CARD_TAG = "water-leak-guard-card";
 const EDITOR_TAG = "water-leak-guard-card-editor";
@@ -600,6 +600,68 @@ function navigate(path) {
  * stylesheets are missing (older WebViews): the card then inlines a <style> tag.
  */
 let sharedSheet;
+/* ------------------------------------------------------------- DOM patch */
+
+/** Elements that move as a unit when siblings are added or removed. */
+function nodeKey(node) {
+  if (node.nodeType !== 1) return null;
+  return node.getAttribute("data-focus") || node.getAttribute("data-section") || node.getAttribute("id") || null;
+}
+
+function sameNode(a, b) {
+  if (a.nodeType !== b.nodeType) return false;
+  if (a.nodeType !== 1) return true;
+  return a.tagName === b.tagName && nodeKey(a) === nodeKey(b);
+}
+
+function morphAttributes(dst, src) {
+  for (const { name } of [...dst.attributes]) {
+    // A <details> the user opened stays open; the markup only ever opens one.
+    if (name === "open" && dst.tagName === "DETAILS") continue;
+    if (!src.hasAttribute(name)) dst.removeAttribute(name);
+  }
+  for (const { name, value } of [...src.attributes]) {
+    if (dst.getAttribute(name) !== value) dst.setAttribute(name, value);
+  }
+}
+
+/**
+ * Make the children of `dst` match those of `src` (a parsed template), reusing
+ * every node that has the same type, tag and key. Nodes from `src` are moved,
+ * not copied; `src` is consumed.
+ */
+function morphChildren(dst, src) {
+  let cur = dst.firstChild;
+  for (const node of [...src.childNodes]) {
+    let match = cur && sameNode(cur, node) ? cur : null;
+    if (!match && nodeKey(node)) {
+      for (let c = cur; c; c = c.nextSibling) {
+        if (sameNode(c, node)) {
+          match = c;
+          break;
+        }
+      }
+    }
+    if (!match) {
+      dst.insertBefore(node, cur);
+      continue;
+    }
+    if (match !== cur) dst.insertBefore(match, cur);
+    else cur = cur.nextSibling;
+    if (match.nodeType === 1) {
+      morphAttributes(match, node);
+      morphChildren(match, node);
+    } else if (match.nodeValue !== node.nodeValue) {
+      match.nodeValue = node.nodeValue;
+    }
+  }
+  while (cur) {
+    const next = cur.nextSibling;
+    dst.removeChild(cur);
+    cur = next;
+  }
+}
+
 function styleSheet() {
   if (sharedSheet === undefined) {
     try {
@@ -1326,33 +1388,28 @@ class WaterLeakGuardCard extends HTMLElement {
     this._swap(html);
     if (focused) {
       const again = [...this.shadowRoot.querySelectorAll("[data-focus]")].find((el) => el.dataset.focus === focused);
-      if (again && !again.hasAttribute("disabled")) again.focus({ preventScroll: true });
+      if (again && again !== this.shadowRoot.activeElement && !again.hasAttribute("disabled")) again.focus({ preventScroll: true });
     }
   }
 
   /**
-   * Put the markup into the card, keeping an existing <ha-card> element and
-   * replacing only its class and content. A new <ha-card> shows nothing until
-   * its own first render one microtask later; a layout in between (restoring
-   * the focus, another card measuring itself) sees a card of height zero, the
-   * page gets shorter and the dashboard scrolls up.
+   * Bring the card content up to date by changing only what differs: a new
+   * flow value changes one text node and one style attribute, a toggled
+   * section adds or removes that section's body. Nothing else is removed and
+   * inserted again. WebKit (Safari, the iOS and macOS apps) lays out the page
+   * while content is briefly missing and has no scroll anchoring: the page got
+   * shorter for a moment and the dashboard jumped up, even with the card
+   * element itself kept. Unchanged nodes also keep focus, hover and animations.
    */
   _swap(html) {
     const root = this.shadowRoot;
-    const card = typeof root.querySelector === "function" ? root.querySelector("ha-card") : null;
-    let next = null;
-    if (card) {
-      const template = document.createElement("template");
-      template.innerHTML = html;
-      next = template.content?.querySelector("ha-card") || null;
-    }
-    if (!next) {
-      root.innerHTML = html; // first paint, or the card is hidden
+    const template = typeof root.insertBefore === "function" ? document.createElement("template") : null;
+    if (!template || !("content" in template)) {
+      root.innerHTML = html; // no DOM to patch (test shim)
       return;
     }
-    card.className = next.className;
-    card.textContent = "";
-    card.append(...next.childNodes);
+    template.innerHTML = html;
+    morphChildren(root, template.content);
   }
 
   /** End of a press (or its time limit): paint what was held back. */

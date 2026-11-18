@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.1.2 — 2026-11-18
+
+- Fix Karte: Das Dashboard springt in Safari und in der Home-Assistant-App für iOS und macOS nicht mehr nach oben, wenn ein neuer Durchflusswert kommt oder „High-Flow-Bypass“ bzw. „Lernmodell“ auf- oder zugeklappt wird. 3.1.1 hatte das nur für Chrome behoben. Die Karte ändert jetzt nur noch, was sich wirklich geändert hat (bei einem neuen Messwert nur die Zahl und den Balken), statt ihren Inhalt neu aufzubauen. WebKit hatte die Seite in dem Moment, in dem der Inhalt fehlte, gekürzt.
+- Karte: Ein aufgeklappter Abschnitt „Grund und Messherkunft“ bleibt bei Aktualisierungen offen, und der Durchflussbalken gleitet wieder zum neuen Wert.
+
+Keine Änderungen an Konfiguration oder Entitäten. Nach dem Update ist ein Neustart von Home Assistant nötig; die App bzw. der Browser lädt die Karte danach neu.
+
 ## 3.1.1 — 2026-11-16
 
 - Fix Karte: Das Dashboard springt nicht mehr nach oben, wenn „High-Flow-Bypass“ oder „Lernmodell“ auf- oder zugeklappt wird oder ein neuer Messwert erscheint. Die Karte behält jetzt ihr `ha-card`-Element und tauscht nur dessen Inhalt; vorher war die Karte bei jedem Neuzeichnen kurz leer, die Seite wurde kürzer und rutschte nach oben.

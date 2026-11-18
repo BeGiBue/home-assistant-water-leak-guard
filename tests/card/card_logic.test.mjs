@@ -434,37 +434,84 @@ function countWrites(card) {
   return writes;
 }
 
-test("a repaint keeps the <ha-card> element and replaces only its content", async () => {
-  const card = await mount();
-  const writes = countWrites(card);
-  // Stand-ins for the painted <ha-card> and for a <template> that parses the new markup.
-  const haCard = { className: "old", kids: ["old"], set textContent(_) { this.kids = []; }, append(...n) { this.kids.push(...n); } };
-  card.shadowRoot.querySelector = (sel) => (sel === "ha-card" ? haCard : null);
-  const createElement = document.createElement;
-  document.createElement = (name) => {
-    if (name !== "template") return createElement(name);
-    return {
-      set innerHTML(v) {
-        const m = /<ha-card(?: class="([^"]*)")?>([\s\S]*)<\/ha-card>/.exec(v);
-        this.content = { querySelector: () => (m ? { className: m[1] || "", childNodes: [m[2]] } : null) };
-      },
-    };
-  };
-  try {
-    const changed = hass({ alarm: "high_flow" });
-    card.hass = changed;
-    assert.equal(writes.n, 0, "the shadow root is not rewritten: <ha-card> stays");
-    assert.match(haCard.className, /^tone-/);
-    assert.equal(haCard.kids.length, 1);
-    assert.match(haCard.kids[0], /class="wlg"/);
-    // No <ha-card> in the new markup (card hidden): the whole content is replaced.
-    card._painted = undefined;
-    card._setHtml("");
-    assert.equal(writes.n, 1);
-  } finally {
-    document.createElement = createElement;
+/* Tiny DOM for the patch function: elements, text nodes, sibling links. */
+class FakeNode {
+  constructor(nodeType, tagName = null, value = null) {
+    Object.assign(this, { nodeType, tagName, nodeValue: value, parentNode: null, childNodes: [], attrs: new Map() });
   }
-  card.disconnectedCallback();
+  get firstChild() { return this.childNodes[0] || null; }
+  get nextSibling() {
+    const kids = this.parentNode?.childNodes || [];
+    return kids[kids.indexOf(this) + 1] || null;
+  }
+  get attributes() { return [...this.attrs].map(([name, value]) => ({ name, value })); }
+  getAttribute(n) { return this.attrs.has(n) ? this.attrs.get(n) : null; }
+  hasAttribute(n) { return this.attrs.has(n); }
+  setAttribute(n, v) { this.attrs.set(n, String(v)); }
+  removeAttribute(n) { this.attrs.delete(n); }
+  removeChild(c) { this.childNodes.splice(this.childNodes.indexOf(c), 1); c.parentNode = null; (globalThis.__removed ||= []).push(c); return c; }
+  insertBefore(c, ref) {
+    if (c.parentNode) c.parentNode.childNodes.splice(c.parentNode.childNodes.indexOf(c), 1);
+    const i = ref ? this.childNodes.indexOf(ref) : this.childNodes.length;
+    this.childNodes.splice(i, 0, c);
+    c.parentNode = this;
+    return c;
+  }
+}
+/** el("div", { class: "a" }, child, "text") */
+const el = (tag, attrs = {}, ...kids) => {
+  const n = new FakeNode(1, tag.toUpperCase());
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  for (const k of kids) n.insertBefore(typeof k === "string" ? new FakeNode(3, null, k) : k, null);
+  return n;
+};
+const frag = (...kids) => el("#fragment", {}, ...kids);
+
+test("a repaint patches the content in place: a new value changes one text node", () => {
+  const value = el("b", { class: "big" }, "12");
+  const icon = el("ha-icon", { icon: "mdi:water" });
+  const card = el("ha-card", { class: "tone-ok" }, el("section", { class: "flow" }, icon, value, el("div", { class: "meter-fill", style: "width:10%" })));
+  const root = frag(card);
+  const text = value.childNodes[0];
+  globalThis.__removed = [];
+  morphChildren(root, frag(el("ha-card", { class: "tone-ok" },
+    el("section", { class: "flow" }, el("ha-icon", { icon: "mdi:water" }), el("b", { class: "big" }, "250"), el("div", { class: "meter-fill", style: "width:40%" })))));
+  assert.equal(root.childNodes[0], card, "same <ha-card>");
+  assert.equal(card.childNodes[0].childNodes[0], icon, "same icon element");
+  assert.equal(value.childNodes[0], text, "same text node");
+  assert.equal(text.nodeValue, "250");
+  assert.equal(card.childNodes[0].childNodes[2].getAttribute("style"), "width:40%");
+  assert.equal(__removed.length, 0, "nothing removed");
+});
+
+test("a repaint adds and removes only the toggled section body", () => {
+  const sum = (key) => el("button", { "data-section": key, "data-focus": `section:${key}` }, key);
+  const body = (key) => el("div", { id: `wlg-${key}` }, "body");
+  const bypassBtn = sum("bypass");
+  const learningBtn = sum("learning");
+  const learningBody = body("learning");
+  const side = el("div", { class: "col-side" }, bypassBtn, body("bypass"), learningBtn, learningBody);
+  const root = frag(side);
+  globalThis.__removed = [];
+  // Close the bypass section.
+  morphChildren(root, frag(el("div", { class: "col-side" }, sum("bypass"), sum("learning"), body("learning"))));
+  assert.equal(side.childNodes.length, 3);
+  side.childNodes.forEach((n, i) => assert.equal(n, [bypassBtn, learningBtn, learningBody][i], `keyed node ${i} kept`));
+  assert.equal(__removed.length, 1);
+  // Open it again: inserted in place, the rest untouched.
+  morphChildren(root, frag(el("div", { class: "col-side" }, sum("bypass"), body("bypass"), sum("learning"), body("learning"))));
+  assert.equal(side.childNodes.length, 4);
+  [0, 2, 3].forEach((i, k) => assert.equal(side.childNodes[i], [bypassBtn, learningBtn, learningBody][k], `node ${i} kept`));
+  assert.equal(side.childNodes[1].getAttribute("id"), "wlg-bypass");
+});
+
+test("a repaint keeps a <details> the user opened and drops stale attributes", () => {
+  const details = el("details", { class: "details", open: "" }, "x");
+  const btn = el("button", { "data-action": "x", disabled: "" }, "go");
+  const root = frag(details, btn);
+  morphChildren(root, frag(el("details", { class: "details" }, "x"), el("button", { "data-action": "x" }, "go")));
+  assert.ok(details.hasAttribute("open"), "user-opened details stays open");
+  assert.ok(!btn.hasAttribute("disabled"), "enabled again");
 });
 
 test("an update that changes nothing visible does not rewrite the card", async () => {
