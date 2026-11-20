@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.3 — 2026-11-20
+
+- Wartung: Test- und Build-Werkzeuge aktualisiert, keine Änderungen an der Funktion.
+
 ## 3.1.2 — 2026-11-18
 
 - Fix Karte: Das Dashboard springt in Safari und in der Home-Assistant-App für iOS und macOS nicht mehr nach oben, wenn ein neuer Durchflusswert kommt oder „High-Flow-Bypass“ bzw. „Lernmodell“ auf- oder zugeklappt wird. 3.1.1 hatte das nur für Chrome behoben. Die Karte ändert jetzt nur noch, was sich wirklich geändert hat (bei einem neuen Messwert nur die Zahl und den Balken), statt ihren Inhalt neu aufzubauen. WebKit hatte die Seite in dem Moment, in dem der Inhalt fehlte, gekürzt.
